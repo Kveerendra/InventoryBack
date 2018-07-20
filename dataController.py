@@ -233,25 +233,29 @@ def sjob():
 @app.route('/login', methods=['POST'])
 def login():
     users = mongo.db.users
-    uname=request.form['username']
-    login_user1 = users.find_one({'username' : request.form['username']})
+    uname=request.get_json(force=True).get('username') #request.form['username'] #(request.get_json(force=True).get('username')
+    login_user1 = users.find_one({'username' : request.get_json(force=True).get('username')})
     error = None
     if login_user:
         if request.form['pass'] == login_user1['password']:
-            session['username'] = request.form['username']
+            session['username'] = request.get_json(force=True).get('username')
             session['name']=login_user1['name']
             id = uname.split('user')[-5:]
             user = User(id)
             login_user(user)
-            data = {
-                'template' : login_user1['partner'],
-                'error' : error
-                }
+           # if login_user1['partner'] == 'B':
+           #         return render_template('B_Dashboard.html')
+            #else:
+             #       return render_template('S_Dashboard.html')
+		    data = {
+                    'template' : login_user1['partner'],
+					'error' : error
+            }
     else:
         error = 'Invalid username or password'
-        data = {
-            'template' : None,
-            'error' : error
+		data  = {
+                    'template' : None,
+                   'error' : error
             }
     return json.dumps(data)
     #return render_template('index.html',error=error)
@@ -261,7 +265,7 @@ def register():
     error = None
     if request.method == 'POST':
         users = mongo.db.users
-        existing_user = users.find_one({'name' : request.form['name']})
+        existing_user = users.find_one({'name' : request.get_json(force=True).get('name')})
         error = None
         if existing_user is None:
             name = request.form['name'] 
@@ -272,25 +276,26 @@ def register():
             else:
                 uname='S_'+uname
                 
-            location=request.form['location']
-            district=request.form['district']
-            pincode=request.form['pincode']
-            hashpass=request.form['pincode']
+            location=request.get_json(force=True).get('location') #request.form['location']
+            district=request.get_json(force=True).get('district') #request.form['district']
+            pincode=request.get_json(force=True).get('pincode') #request.form['pincode']
+            hashpass=request.get_json(force=True).get('pincode') #request.form['pincode']
             users.insert({'name' : name, 'username' : uname,'password' : hashpass,'partner' : partner,'location' : location,'district': district,'pincode': pincode})
             params=[uname,hashpass]
-            data = {
-                'params' : params,
-                'error' : error
-                }
+            #return render_template('Register_Sucess.html',params=params)
+			data = {
+                    'params' : params,
+					'error' : error
+            }
         else:
             error = 'User Already Exsist !!!'
-            data = {
-                'params' : None,
-                'error' : error
-                }
+			data  = {
+                    'params' : None,
+					'error' : error
+            }
     
     #return render_template('register.html',error=error)
-    return json.dumps(data)
+	return json.dumps(data)
 
 
 @app.route('/orderList',methods=['POST','GET'])
