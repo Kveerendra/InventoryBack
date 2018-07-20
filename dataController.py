@@ -3,11 +3,12 @@ from flask import Flask, render_template, request, session , url_for , redirect,
 from flask_pymongo import PyMongo,pymongo
 from random import randint
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user 
+from flask_cors import CORS
 import datetime
 
 
 app = Flask(__name__)
-
+CORS(app)
 app.config.update(
     DEBUG = True
 )
@@ -243,17 +244,17 @@ def login():
             id = uname.split('user')[-5:]
             user = User(id)
             login_user(user)
-           # if login_user1['partner'] == 'B':
-           #         return render_template('B_Dashboard.html')
+            # if login_user1['partner'] == 'B':
+            #         return render_template('B_Dashboard.html')
             #else:
-             #       return render_template('S_Dashboard.html')
-		    data = {
+            #       return render_template('S_Dashboard.html')
+            data = {
                     'template' : login_user1['partner'],
 					'error' : error
             }
     else:
         error = 'Invalid username or password'
-		data  = {
+        data  = {
                     'template' : None,
                    'error' : error
             }
@@ -283,19 +284,19 @@ def register():
             users.insert({'name' : name, 'username' : uname,'password' : hashpass,'partner' : partner,'location' : location,'district': district,'pincode': pincode})
             params=[uname,hashpass]
             #return render_template('Register_Sucess.html',params=params)
-			data = {
+            data = {
                     'params' : params,
 					'error' : error
             }
         else:
             error = 'User Already Exsist !!!'
-			data  = {
+            data  = {
                     'params' : None,
 					'error' : error
             }
     
     #return render_template('register.html',error=error)
-	return json.dumps(data)
+    return json.dumps(data)
 
 
 @app.route('/orderList',methods=['POST','GET'])
