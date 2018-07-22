@@ -111,9 +111,23 @@ def addproduct():
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
         supplier.insert({'_id':pname,'product_id':pname,'product_name' : productname , 'username' : user,'Product_type' : Producttype,'product_description' : description,'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
+        var formData = {
+                        productname: productname,
+                        Producttype: Producttype,
+                        description: description,
+                        price: price_per_qty,
+                        quantity: quantity,
+                        delivery: delivery_day,
+				
+                        };  
+        data = {
+                    'info' : formData,
+		    'error' : None
+					
+            } 
+    return json.dumps(data)	
         
-        
-    return redirect(url_for('createproduct'))
+    #return redirect(url_for('createproduct'))
     
 @app.route('/showallproducts',methods=['POST','GET'])
 @login_required
