@@ -124,8 +124,8 @@ def addproduct():
                     'info' : formData,
 		    'error' : None
 					
-            } 
-    return json.dumps(data)	
+               } 
+        return json.dumps(data)	
         
     #return redirect(url_for('createproduct'))
     
@@ -188,7 +188,23 @@ def updateProduct():
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
         supplier.update_one({'product_id':product_id},{'$set':{'product_name' : pname , 'username' : user,'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day,'product_create_dt': pcreate_dt}})
-        return redirect(url_for('showallproducts'))
+        var formData = {
+		        product_id: product_id,
+                        product_name: pname,
+			username: user,
+                        price_per_qty: price_per_qty,
+                        product_quantity: quantity,
+                        delivery_day: delivery_day,
+			product_create_dt: pcreate_dt
+				
+                        };  
+        data = {
+                    'info' : formData,
+		    'error' : None
+					
+               } 
+        return json.dumps(data)
+	#return redirect(url_for('showallproducts'))
 
  
 @app.route('/outofstock',methods=['POST','GET'])
