@@ -111,7 +111,7 @@ def addproduct():
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
         supplier.insert({'_id':pname,'product_id':pname,'product_name' : productname , 'username' : user,'Product_type' : Producttype,'product_description' : description,'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
-        var formData = {
+        formData = {
                         productname: productname,
                         Producttype: Producttype,
                         description: description,
@@ -188,7 +188,7 @@ def updateProduct():
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
         supplier.update_one({'product_id':product_id},{'$set':{'product_name' : pname , 'username' : user,'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day,'product_create_dt': pcreate_dt}})
-        var formData = {
+        formData = {
 		        product_id: product_id,
                         product_name: pname,
 			username: user,
@@ -268,7 +268,7 @@ def login():
     login_user1 = users.find_one({'username' : request.get_json(force=True).get('username')})
     error = None
     if login_user:
-        if request.form['pass'] == login_user1['password']:
+        if request.get_json(force=True).get('password') == login_user1['password']:
             session['username'] = request.get_json(force=True).get('username')
             session['name']=login_user1['name']
             id = uname.split('user')[-5:]
