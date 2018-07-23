@@ -296,11 +296,11 @@ def register():
     error = None
     if request.method == 'POST':
         users = mongo.db.users
-        existing_user = users.find_one({'name' : request.get_json(force=True).get('name')})
+        existing_user = users.find_one({'name' : request.get_json(force=True).get('username')})
         error = None
         if existing_user is None:
-            name = request.form['name'] 
-            partner = request.form['partner']
+            name = request.get_json(force=True).get('username')
+            partner = request.get_json(force=True).get('partner')
             uname = name + str(randint(10000,99999))
             if partner == 'B':
                 uname = 'B_'+uname
