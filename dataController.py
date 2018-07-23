@@ -14,8 +14,8 @@ app.config.update(
 )
 
 
-app.config['MONGO_DBNAME'] = 'login_test'
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/'
+#app.config['MONGO_DBNAME'] = 'login_test'
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/login_test'
 
 # flask-login
 login_manager = LoginManager()
