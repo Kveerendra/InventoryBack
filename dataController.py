@@ -265,22 +265,25 @@ def sjob():
 def login():
     users = mongo.db.users
     uname=request.get_json(force=True).get('username') #request.form['username'] #(request.get_json(force=True).get('username')
-    login_user1 = users.find_one({'username' : request.get_json(force=True).get('username')})
+    login_user1 = users.find_one({'username' : uname})
     error = None
-    if login_user:
+    if login_user1:
         if request.get_json(force=True).get('password') == login_user1['password']:
             session['username'] = request.get_json(force=True).get('username')
             session['name']=login_user1['name']
             id = uname.split('user')[-5:]
             user = User(id)
             login_user(user)
-            # if login_user1['partner'] == 'B':
-            #         return render_template('B_Dashboard.html')
-            #else:
-            #       return render_template('S_Dashboard.html')
+            role=''
+            if login_user1['partner'] == 'B':
+                role='buyer'
+            else:
+                if login_user1['partner'] == 'S':
+                    role='seller'
             data = {
-                    'template' : login_user1['partner'],
-					'error' : error
+                    'username' : login_user1['username'],
+                    'role' : role,
+                    'error' : error
             }
     else:
         error = 'Invalid username or password'
@@ -288,6 +291,7 @@ def login():
                     'template' : None,
                    'error' : error
             }
+    print(data)
     return json.dumps(data)
     #return render_template('index.html',error=error)
 
@@ -296,10 +300,10 @@ def register():
     error = None
     if request.method == 'POST':
         users = mongo.db.users
-        existing_user = users.find_one({'name' : request.get_json(force=True).get('username')})
+        existing_user = users.find_one({'name' : request.get_json(force=True).get('name')})
         error = None
         if existing_user is None:
-            name = request.get_json(force=True).get('username')
+            name = request.get_json(force=True).get('name')
             partner = request.get_json(force=True).get('partner')
             uname = name + str(randint(10000,99999))
             if partner == 'B':
