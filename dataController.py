@@ -332,7 +332,123 @@ def register():
     #return render_template('register.html',error=error)
     return json.dumps(data)
 
+@app.route("/upload", methods=['GET', 'POST'])
+def upload():
+    if request.method == 'POST':
+        print (request.files['file'])
+        users = mongo.db.users
+        f = request.files['file']
+        data_xls = pd.read_excel(f)
+        user_data_json_array=data_xls.to_json(orient='records')
+        parsed = json.loads(user_data_json_array)
+        for item in parsed:
+            existing_user = users.find_one({'name' : item['name']})
+            if existing_user is None:
+                users.insert(item)
+                #print('Inserted : '+ str(item))
+		var data = {
+		             'existing_user' : existing_user,
+			     'item' : str(item)
+			   }
+            else:
+                #print('User Already Exsist !!!' + str(item))
+		var data = {
+			      'existing_user' : existing_user,
+			      'item' : str(item)
+			   }
+	return json.dumps(data)
+        #return render_template('excel_upload.html')
+    #return render_template('excel_upload.html')
 
+@app.route("/aupload", methods=['GET', 'POST'])
+def aupload():
+    if request.method == 'POST':
+        print (request.files['file'])
+        prodcut_master = mongo.db.prodcut_master
+        f = request.files['file']
+        data_xls = pd.read_excel(f)
+        user_data_json_array=data_xls.to_json(orient='records')
+        parsed = json.loads(user_data_json_array)
+        for item in parsed:
+            print(item)
+            existing_user =prodcut_master.find_one({'product_id': item['product_id']})
+            if existing_user is None:
+                prodcut_master.insert(item)
+                #print('Inserted : '+ str(item))
+		var data = {
+			      'existing_user' : existing_user,
+			      'item' : str(item)
+			   }
+            else:
+                #print('User Already Exsist !!!' + str(item))
+		var data = {
+			      'existing_user' : existing_user,
+			      'item' : str(item)
+				}
+	return json.dumps(data)
+        #return render_template('excel_aupload.html')
+    #return render_template('excel_aupload.html')
+
+@app.route('/addToWishList',methods=['POST','GET'])
+@login_required #updatepoduct, upload, aupload, addtowhishlist
+def addToWishList():
+    if request.method == 'POST':
+        recievedData = request.json['info']
+        wish_list_details = mongo.db.wish_list_details
+        #supplier=mongo.db.supplier
+        user=session['username']
+        product_id = recievedData['product_id'] 
+        product_name=recievedData['product_name'] 
+        Product_type=recievedData['Product_type'] 
+        product_description=recievedData['product_description'] 
+        price=recievedData['price_per_qty'] 
+        no_orders=recievedData['no_orders']
+        sub_contractor_id=recievedData['s_user_name']
+        sub_product_id=product_id+sub_contractor_id
+      #  available_quantity=recievedData['available_quantity']
+        wish_id=user+product_id
+        now = datetime.datetime.now()
+        order_dt= now.strftime("%Y-%m-%d %H:%M")
+        wish_list_detail=wish_list_details.find_one({'wish_id' : wish_id})
+        print(wish_list_detail)
+        try:
+            if wish_list_detail is not None:
+                quantity=int(wish_list_detail['quantity'])+int(no_orders)
+                wish_list_details.update_one({'_id' : wish_list_detail['wish_id'] },{"$set" : {'quantity' : str(quantity)}})
+		var data = {
+			      '_id' : wish_list_detail['wish_id'],
+			      'quantity' : str(quantity)
+		           }
+                #return redirect(url_for('subcontract'))
+            else:
+                wish_list_details.insert_one({'_id' : wish_id ,'wish_id':wish_id,'product_id':product_id,
+                                                          'sub_product_id' : sub_product_id,'sup_product_id' : '',
+                                                          'product_name' : product_name,'Product_type' : Product_type,
+                                                          'product_description' : product_description, 
+                                                          'price' : str(price),
+                                                          'quantity' : str(no_orders),
+                                                          'wish_stauts' : 'PE',
+                                                          'wish_dt': order_dt,'supplier_id':user,'sub_contractor_id' : sub_contractor_id})
+		var data = {
+			       '_id' : wish_list_detail['wish_id'],
+				'wish_id':wish_id,
+				'product_id':product_id,
+                                'sub_product_id' : sub_product_id,
+				'sup_product_id' : '',
+                                'product_name' : product_name,
+				'Product_type' : Product_type,
+                                'product_description' : product_description, 
+                                'price' : str(price),
+                                'quantity' : str(no_orders),
+                                'wish_stauts' : 'PE',
+                                'wish_dt': order_dt,
+				'supplier_id':user,
+				'sub_contractor_id' : sub_contractor_id
+			}
+                #return redirect(url_for('subcontract'))
+            return json.dumps(data)   
+        except pymongo.errors.DuplicateKeyError as e:
+            print('IN exception')
 @app.route('/orderList',methods=['POST','GET'])
 @login_required
 def orderList():
