@@ -99,32 +99,20 @@ def createproduct():
 def addproduct():
     if request.method == 'POST':
         supplier = mongo.db.supplier
-        user=session['username']
-        data=request.json['info']
-        productname = data['productname'] 
+        data=request.get_json(force=True).get('info')
+        user=request.get_json(force=True).get('user')
+        print(data)
+        productname = data['product_name']
         pname = productname+'_'+str(randint(10000,99999))
-        Producttype = data['Producttype']  
-        description=data['description']
-        price_per_qty=data['price']
-        quantity=data['quantity']
-        delivery_day=data['delivery']
+        Producttype = data['product_type']  
+        description=data['product_description']
+        price_per_qty=data['product_price']
+        quantity=data['product_quantity']
+        delivery_day=data['product_delivery']
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
-        supplier.insert({'_id':pname,'product_id':pname,'product_name' : productname , 'username' : user,'Product_type' : Producttype,'product_description' : description,'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
-        formData = {
-                        productname: productname,
-                        Producttype: Producttype,
-                        description: description,
-                        price: price_per_qty,
-                        quantity: quantity,
-                        delivery: delivery_day,
-				
-                        };  
-        data = {
-                    'info' : formData,
-		    'error' : None
-					
-               } 
+        supplier.insert({'_id':pname,'product_id':pname,'product_name' : productname , 'username' : user['username'],'product_type' : Producttype, 'product_description' : description, 'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
+        
         return json.dumps(data)	
         
     #return redirect(url_for('createproduct'))
@@ -135,7 +123,6 @@ def showallproducts():
     return render_template('showallproducts.html')
 
 @app.route('/showproducts',methods=['POST','GET'])
-@login_required
 def showproducts():
 
      product_snapshot = mongo.db.supplier
@@ -147,8 +134,8 @@ def showproducts():
         oSnapshot={
                 'product_id': productStatus['product_id'],
                 'product_name': productStatus['product_name'],
-                'product_description': productStatus['product_description'],
                 'price_per_qty' : productStatus['price_per_qty'],
+                'product_description' : productStatus['product_description'],
                 'product_quantity' :qty,
                 'delivery_day' : productStatus['delivery_day']
                 }
@@ -345,18 +332,16 @@ def upload():
             existing_user = users.find_one({'name' : item['name']})
             if existing_user is None:
                 users.insert(item)
-                #print('Inserted : '+ str(item))
-		var data = {
+                data = {
 		             'existing_user' : existing_user,
 			     'item' : str(item)
-			   }
+			    }
             else:
-                #print('User Already Exsist !!!' + str(item))
-		var data = {
+                data = {
 			      'existing_user' : existing_user,
 			      'item' : str(item)
-			   }
-	return json.dumps(data)
+			    }
+    return json.dumps(data)
         #return render_template('excel_upload.html')
     #return render_template('excel_upload.html')
 
@@ -364,28 +349,26 @@ def upload():
 def aupload():
     if request.method == 'POST':
         print (request.files['file'])
-        prodcut_master = mongo.db.prodcut_master
+        product_master = mongo.db.product_master
         f = request.files['file']
         data_xls = pd.read_excel(f)
         user_data_json_array=data_xls.to_json(orient='records')
         parsed = json.loads(user_data_json_array)
         for item in parsed:
             print(item)
-            existing_user =prodcut_master.find_one({'product_id': item['product_id']})
+            existing_user =product_master.find_one({'product_id': item['product_id']})
             if existing_user is None:
-                prodcut_master.insert(item)
-                #print('Inserted : '+ str(item))
-		var data = {
+                product_master.insert(item)
+                data = {
 			      'existing_user' : existing_user,
 			      'item' : str(item)
-			   }
+			    }
             else:
-                #print('User Already Exsist !!!' + str(item))
-		var data = {
+                data = {
 			      'existing_user' : existing_user,
 			      'item' : str(item)
 				}
-	return json.dumps(data)
+    return json.dumps(data)
         #return render_template('excel_aupload.html')
     #return render_template('excel_aupload.html')
 
@@ -399,7 +382,7 @@ def addToWishList():
         user=session['username']
         product_id = recievedData['product_id'] 
         product_name=recievedData['product_name'] 
-        Product_type=recievedData['Product_type'] 
+        product_type=recievedData['product_type'] 
         product_description=recievedData['product_description'] 
         price=recievedData['price_per_qty'] 
         no_orders=recievedData['no_orders']
@@ -415,28 +398,28 @@ def addToWishList():
             if wish_list_detail is not None:
                 quantity=int(wish_list_detail['quantity'])+int(no_orders)
                 wish_list_details.update_one({'_id' : wish_list_detail['wish_id'] },{"$set" : {'quantity' : str(quantity)}})
-		var data = {
+                data = {
 			      '_id' : wish_list_detail['wish_id'],
 			      'quantity' : str(quantity)
-		           }
+		        }
                 #return redirect(url_for('subcontract'))
             else:
                 wish_list_details.insert_one({'_id' : wish_id ,'wish_id':wish_id,'product_id':product_id,
                                                           'sub_product_id' : sub_product_id,'sup_product_id' : '',
-                                                          'product_name' : product_name,'Product_type' : Product_type,
+                                                          'product_name' : product_name,'product_type' : product_type,
                                                           'product_description' : product_description, 
                                                           'price' : str(price),
                                                           'quantity' : str(no_orders),
                                                           'wish_stauts' : 'PE',
                                                           'wish_dt': order_dt,'supplier_id':user,'sub_contractor_id' : sub_contractor_id})
-		var data = {
+                data = {
 			       '_id' : wish_list_detail['wish_id'],
 				'wish_id':wish_id,
 				'product_id':product_id,
                                 'sub_product_id' : sub_product_id,
 				'sup_product_id' : '',
                                 'product_name' : product_name,
-				'Product_type' : Product_type,
+				'product_type' : product_type,
                                 'product_description' : product_description, 
                                 'price' : str(price),
                                 'quantity' : str(no_orders),
@@ -444,7 +427,7 @@ def addToWishList():
                                 'wish_dt': order_dt,
 				'supplier_id':user,
 				'sub_contractor_id' : sub_contractor_id
-			}
+			    }
                 #return redirect(url_for('subcontract'))
             return json.dumps(data)   
         except pymongo.errors.DuplicateKeyError as e:
@@ -468,7 +451,7 @@ def orderList1():
         tempSupplier={
                 'product_id': supplier['product_id'],
                 'product_name': supplier['product_name'],
-                'Product_type': supplier['Product_type'],
+                'product_type': supplier['product_type'],
                 'product_description' : supplier['product_description'],
                 'price_per_qty' : supplier['price_per_qty'],
                 'available_quantity' : available_quantity,
@@ -639,7 +622,36 @@ def getCompleteOrder():
 
      return json.dumps(orderList)
  
-    
+@app.route('/productList',methods=['GET'])
+def getProducts():
+    product_master = mongo.db.product_master
+    products_data=product_master.find()
+    products=[]
+    for product in products_data:
+        #qty=int(productStatus['product_quantity']) - int(productStatus['no_orders'])
+        tempProduct={
+                'product_id': product['product_id'],
+                'product_name': product['product_name'],
+                'product_type': product['product_type'],
+                'product_description': product['product_description'],
+                }
+        products.append(tempProduct)
+    return json.dumps(products)
+
+@app.route('/insertMasterData', methods=['POST'])
+def insertMasterData():
+    if request.method == 'POST':
+        product_master = mongo.db.product_master
+        data=request.get_json(force=True).get('info')
+        productname = data['product_name'] 
+        pname = productname+'_'+str(randint(10000,99999))
+        Producttype = data['product_type']  
+        description=data['product_description']
+        product_master.insert({'_id':pname,'product_id':pname,'product_name' : productname ,'product_type' : Producttype,'product_description' : description})
+        
+        
+    return getProducts
+
 if __name__ == '__main__':
     app.secret_key = 'mysecret'
     app.run(port=5002,host='0.0.0.0')
