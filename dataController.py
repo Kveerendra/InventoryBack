@@ -506,13 +506,11 @@ def orderDetails():
     return render_template('orderDetails.html')
     #return order_status_snapshot
 @app.route('/showOrderDetails',methods=['POST','GET'])
-@login_required
 def showOrderDetails():
 
      order_details = mongo.db.order_details
-     user=session['username']
+     user=request.get_json(force=True).get('username')
      orders=order_details.find({'user_id' : user})
-     print(orders)
      #return render_template('OrderList.html',orderStatusSnapShot=order_status_snapshot)
      orderList=[]
      for order in orders:
@@ -535,11 +533,10 @@ def updateOrder():
     return render_template('updateOrder.html')
     #return order_status_snapshot
 @app.route('/getOrderData',methods=['POST','GET'])
-@login_required
 def getOrderData():
 
      order_details = mongo.db.order_details
-     user=session['username']
+     user=request.get_json(force=True).get('username')
      orders=order_details.find({'supplier_id' : user})
      print(orders)
     #return render_template('OrderList.html',orderStatusSnapShot=order_status_snapshot)
