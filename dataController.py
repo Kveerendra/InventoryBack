@@ -622,51 +622,201 @@ def getOrderData():
 
      return json.dumps(orderList)
     
-@app.route('/updateOrderDetails',methods=['POST','GET'])
+# @app.route('/updateOrderDetails',methods=['POST','GET'])
+# @login_required
+# def updateOrderDetails():
+#     if request.method == 'POST':
+#         order_details = mongo.db.order_details
+#         supplier=mongo.db.supplier
+#         record=request.json['record']
+#         order_id=record['order_id']
+#         product_id=record['product_id']
+#         delivery_stauts=record['delivery_stauts']
+#
+#         thisOrder = order_details.find_one({'order_id' : order_id})
+#
+#         if thisOrder is not None:
+#           result=order_details.update_one({'order_id' : order_id },{"$set" : {'delivery_stauts' :delivery_stauts }})
+#
+#           if result.modified_count >0:
+#               if delivery_stauts == 'DI':
+#                  thisSupplier = supplier.find_one({'product_id' : product_id})
+#                  no_orders=thisSupplier['no_orders']
+#                  result= supplier.update_one({'product_id' : product_id },{"$set" : {'no_orders' : str(int(no_orders)-1)}})
+#                  print('if block order_details')
+#                  return redirect(url_for('orderList'))
+#
+#           else:
+#                   print('else block supplier')
+#                   return result
+#
+#     return redirect(url_for('updateOrder'))
+
+
+@app.route('/updateOrderDetails', methods=['POST', 'GET'])
 @login_required
 def updateOrderDetails():
     if request.method == 'POST':
         order_details = mongo.db.order_details
-        supplier=mongo.db.supplier
-        record=request.json['record']
-        order_id=record['order_id']
-        product_id=record['product_id']
-        delivery_stauts=record['delivery_stauts']
-        
-        thisOrder = order_details.find_one({'order_id' : order_id})
-      
-        if thisOrder is not None:
-          result=order_details.update_one({'order_id' : order_id },{"$set" : {'delivery_stauts' :delivery_stauts }})
-          
-          if result.modified_count >0: 
-              if delivery_stauts == 'DI':
-                 thisSupplier = supplier.find_one({'product_id' : product_id})
-                 no_orders=thisSupplier['no_orders']
-                 result= supplier.update_one({'product_id' : product_id },{"$set" : {'no_orders' : str(int(no_orders)-1)}})
-                 print('if block order_details')
-              data = {
-			  'product_id' : product_id,
-			  'no_orders' : str(int(no_orders)-1),
-			  'delivery_stauts' : delivery_stauts,
-			  'order_id' : order_id
-			         }
-				 
-                 #return redirect(url_for('orderList'))
-              
-          else:
-              print('else block supplier')
-          thisSupplier = supplier.find_one({'product_id' : product_id})
-          no_orders=thisSupplier['no_orders']
-          data = {
-			  'product_id' : product_id,
-			  'no_orders' : no_orders,
-			  'delivery_stauts' : delivery_stauts,
-			  'order_id' : order_id
-			 }
-				  
-                  #return result
-        return json.dumps(data)   
-    #return redirect(url_for('updateOrder'))
+        order_history = mongo.db.order_history
+        order_details_staging = mongo.db.order_details_staging
+        sub_contracotor_details = mongo.db.sub_contracotor_details
+        supplier = mongo.db.supplier
+        record = request.json['record']
+        order_id = record['order_id']
+        product_id = record['product_id']
+        product_name = record['product_name']
+        sup_product_id = record['sup_product_id']
+        sub_product_id = record['sub_product_id']
+        Product_type = record['Product_type']
+        product_description = record['product_description']
+        price = record['price']
+        order_dt = record['order_dt']
+        delivery_stauts = record['delivery_stauts']
+        supplier_id = record['supplier_id']
+        sub_contractor_id = record['sub_contractor_id']
+        ordered_quantity = record['quantity']
+        print(ordered_quantity)
+
+        thisOrder = order_details.find_one({'order_id': order_id})
+
+        thisSubContractor = supplier.find_one({'_id': sub_product_id})
+
+        if thisOrder is None:
+            if delivery_stauts == 'CO':
+                writeResult = order_details.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
+                                                        'sub_product_id': sub_product_id,
+                                                        'sup_product_id': sup_product_id,
+                                                        'product_name': product_name,
+                                                        'price': str(price),
+                                                        'quantity': ordered_quantity,
+                                                        'delivery_stauts': delivery_stauts,
+                                                        'order_dt': order_dt,
+                                                        'supplier_id': supplier_id,
+                                                        'sub_contractor_id': sub_contractor_id})
+                writeResult = order_history.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
+                                                        'sub_product_id': sub_product_id,
+                                                        'sup_product_id': sup_product_id,
+                                                        'product_name': product_name,
+                                                        'price': str(price),
+                                                        'quantity': ordered_quantity,
+                                                        'delivery_stauts': delivery_stauts,
+                                                        'order_dt': order_dt,
+                                                        'supplier_id': supplier_id,
+                                                        'sub_contractor_id': sub_contractor_id})
+                order_details_staging.delete_one({'_id': order_id})
+                if order_id[0] == 'S':
+                    print("In suppliers order")
+                    # supplier_id=thisOrder['user_id']
+                    print(supplier_id)
+                    print(product_id)
+                    thisSupplier = supplier.find_one({'_id': sup_product_id})
+                    sub_id = supplier_id + sub_contractor_id + product_id
+                    print(sub_id)
+                    thisSubcontracotor = sub_contracotor_details.find_one({'_id': sub_id})
+                    if thisSubcontracotor is not None:
+                        print("Updating subcontractor to sub_contractor_details ")
+                        sub_contracotor_details.update_one({'_id': sub_id}, {"$set": {'ordered_quantity': str(
+                            int(thisSubcontracotor['ordered_quantity']) + int(ordered_quantity))}})
+
+                    else:
+                        print("Adding new subcontractor to sub_contractor_details")
+                        sub_contracotor_details.insert_one(
+                            {'_id': sub_id, 'sub_contractor_id': sub_contractor_id, 'supplier_id': supplier_id,
+                             'product_id': product_id, 'product_name': product_name,
+                             'ordered_quantity': ordered_quantity, 'price': price, 'delivery_stauts': delivery_stauts,
+                             'order_dt': order_dt, })
+                    if thisSupplier is not None:
+                        print("Product found updating existing")
+                        new_sup_qty = int(ordered_quantity) + int(thisSupplier['product_quantity'])
+                        result = supplier.update_one({'_id': sup_product_id},
+                                                     {"$set": {'product_quantity': str(new_sup_qty)}})
+
+                        new_sub_qty = int(thisSubContractor['product_quantity']) - int(ordered_quantity)
+                        if new_sub_qty < 0:
+                            new_sub_qty = 0;
+                        result = supplier.update_one({'_id': sub_product_id},
+                                                     {"$set": {'product_quantity': str(new_sub_qty)}})
+                        new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                        supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(new_order)}})
+                    else:
+                        print("New Record----")
+                        supplier.insert_one(
+                            {'_id': sup_product_id, 'product_id': product_id, 'product_name': product_name,
+                             'username': supplier_id, 'Product_type': Product_type,
+                             'product_description': product_description, 'price_per_qty': price,
+                             'product_quantity': ordered_quantity, 'delivery_day': '1', 'no_orders': '0',
+                             'product_create_dt': order_dt})
+                        new_sub_qty = int(thisSubContractor['product_quantity']) - int(ordered_quantity)
+                        if new_sub_qty < 0:
+                            new_sub_qty = 0;
+                        result = supplier.update_one({'_id': sub_product_id},
+                                                     {"$set": {'product_quantity': str(new_sub_qty)}})
+                else:
+                    print("New Record----1 this block is for buyer place an order to supplier and supplier approves ")
+                    new_sub_qty = int(thisSubContractor['product_quantity']) - int(ordered_quantity)
+                    if new_sub_qty < 0:
+                        new_sub_qty = 0;
+                    result = supplier.update_one({'_id': sub_product_id},
+                                                 {"$set": {'product_quantity': str(new_sub_qty)}})
+                    new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                    supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(new_order)}})
+
+            else:
+                print(
+                    "New Record----2 for this block is for buyer/supplier place an order to supplier and supplier Denied ")
+                if order_id[0] == 'S':
+                    sub_id = supplier_id + sub_contractor_id + product_id
+                    thisSubcontracotor = sub_contracotor_details.find_one({'_id': sub_id})
+                    if thisSubcontracotor is not None:
+                        print("Exist")
+                        sub_contracotor_details.update_one({'_id': sub_id}, {"$set": {'ordered_quantity': str(
+                            int(thisSubcontracotor['ordered_quantity']) + int(ordered_quantity))}})
+                        new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                        supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(new_order)}})
+                    else:
+                        print("new")
+                        sub_contracotor_details.insert_one(
+                            {'_id': sub_id, 'sub_contractor_id': sub_contractor_id, 'supplier_id': supplier_id,
+                             'product_id': product_id, 'product_name': product_name,
+                             'ordered_quantity': ordered_quantity, 'price': price, 'delivery_stauts': delivery_stauts,
+                             'order_dt': order_dt, })
+                print("This will execute for buyer declined orders")
+                new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': new_order}})
+                writeResult = order_history.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
+                                                        'sub_product_id': sub_product_id,
+                                                        'sup_product_id': sup_product_id,
+                                                        'product_name': product_name,
+                                                        'price': str(price),
+                                                        'quantity': ordered_quantity,
+                                                        'delivery_stauts': delivery_stauts,
+                                                        'order_dt': order_dt,
+                                                        'supplier_id': supplier_id,
+                                                        'sub_contractor_id': sub_contractor_id})
+                writeResult = order_details.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
+                                                        'sub_product_id': sub_product_id,
+                                                        'sup_product_id': sup_product_id,
+                                                        'product_name': product_name,
+                                                        'price': str(price),
+                                                        'quantity': ordered_quantity,
+                                                        'delivery_stauts': delivery_stauts,
+                                                        'order_dt': order_dt,
+                                                        'supplier_id': supplier_id,
+                                                        'sub_contractor_id': sub_contractor_id})
+                order_details_staging.delete_one({'_id': order_id})
+
+    data = {
+        'order_id': order_id,
+        'product_id': product_id,
+        'product_name': product_name,
+        'price': price,
+        'quantity': ordered_quantity,
+        'order_dt': order_dt,
+        'delivery_stauts': delivery_stauts
+    }
+    return json.dumps(data)
+    # return redirect(url_for('updateOrder'))        
     
     
 @app.route('/completeOrder',methods=['POST','GET'])
