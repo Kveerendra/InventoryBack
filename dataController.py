@@ -307,13 +307,13 @@ def register():
             #return render_template('Register_Sucess.html',params=params)
             data = {
                     'params' : params,
-					'error' : error
+		    'error' : error
             }
         else:
             error = 'User Already Exsist !!!'
             data  = {
                     'params' : None,
-					'error' : error
+		    'error' : error
             }
     
     #return render_template('register.html',error=error)
@@ -335,12 +335,12 @@ def upload():
                 data = {
 		             'existing_user' : existing_user,
 			     'item' : str(item)
-			    }
+		       }
             else:
                 data = {
 			      'existing_user' : existing_user,
 			      'item' : str(item)
-			    }
+		       }
     return json.dumps(data)
         #return render_template('excel_upload.html')
     #return render_template('excel_upload.html')
@@ -362,12 +362,12 @@ def aupload():
                 data = {
 			      'existing_user' : existing_user,
 			      'item' : str(item)
-			    }
+		       }
             else:
                 data = {
 			      'existing_user' : existing_user,
 			      'item' : str(item)
-				}
+		       }
     return json.dumps(data)
         #return render_template('excel_aupload.html')
     #return render_template('excel_aupload.html')
@@ -578,13 +578,29 @@ def updateOrderDetails():
                  no_orders=thisSupplier['no_orders']
                  result= supplier.update_one({'product_id' : product_id },{"$set" : {'no_orders' : str(int(no_orders)-1)}})
                  print('if block order_details')
-                 return redirect(url_for('orderList'))
+		 data = {
+			  'product_id' : product_id,
+			  'no_orders' : str(int(no_orders)-1),
+			  'delivery_stauts' : delivery_stauts,
+			  'order_id' : order_id
+			}
+				 
+                 #return redirect(url_for('orderList'))
               
           else:
                   print('else block supplier')
-                  return result
-        
-    return redirect(url_for('updateOrder'))
+		  thisSupplier = supplier.find_one({'product_id' : product_id})
+		  no_orders=thisSupplier['no_orders']
+		  data = {
+			  'product_id' : product_id,
+			  'no_orders' : no_orders,
+			  'delivery_stauts' : delivery_stauts,
+			  'order_id' : order_id
+			 }
+				  
+                  #return result
+        return json.dumps(data)   
+    #return redirect(url_for('updateOrder'))
     
     
 @app.route('/completeOrder',methods=['POST','GET'])
