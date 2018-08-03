@@ -14,8 +14,8 @@ app.config.update(
 )
 
 
-#app.config['MONGO_DBNAME'] = 'login_test'
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/login_test'
+#app.config['MONGO_DBNAME'] = 'IMO'
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/IMO'
 
 # flask-login
 login_manager = LoginManager()
@@ -578,20 +578,20 @@ def updateOrderDetails():
                  no_orders=thisSupplier['no_orders']
                  result= supplier.update_one({'product_id' : product_id },{"$set" : {'no_orders' : str(int(no_orders)-1)}})
                  print('if block order_details')
-		 data = {
+              data = {
 			  'product_id' : product_id,
 			  'no_orders' : str(int(no_orders)-1),
 			  'delivery_stauts' : delivery_stauts,
 			  'order_id' : order_id
-			}
+			         }
 				 
                  #return redirect(url_for('orderList'))
               
           else:
-                  print('else block supplier')
-		  thisSupplier = supplier.find_one({'product_id' : product_id})
-		  no_orders=thisSupplier['no_orders']
-		  data = {
+              print('else block supplier')
+          thisSupplier = supplier.find_one({'product_id' : product_id})
+          no_orders=thisSupplier['no_orders']
+          data = {
 			  'product_id' : product_id,
 			  'no_orders' : no_orders,
 			  'delivery_stauts' : delivery_stauts,
@@ -667,4 +667,4 @@ def insertMasterData():
 
 if __name__ == '__main__':
     app.secret_key = 'mysecret'
-    app.run(port=5002,host='0.0.0.0')
+    app.run(port=5003,host='0.0.0.0')
