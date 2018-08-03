@@ -460,39 +460,105 @@ def orderList1():
         supplierList.append(tempSupplier)
 
      return json.dumps(supplierList)
+# @app.route('/placeOrder',methods=['POST','GET'])
+# @login_required
+# def placeOrder():
+#     if request.method == 'POST':
+#         recievedData = request.json['info']
+#         order_details = mongo.db.order_details
+#         supplier=mongo.db.supplier
+#         user=session['username']
+#         product_id = recievedData['product_id']
+#         product_name=recievedData['product_name']
+#         price=recievedData['price_per_qty']
+#         order_id=user+str(randint(10000,99999))
+#         user_id=user
+#         now = datetime.datetime.now()
+#         order_dt= now.strftime("%Y-%m-%d %H:%M")
+#         thisSupplier = supplier.find_one({'product_id' : product_id})
+#         try:
+#             writeResult=order_details.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,'product_name' : product_name, 'price' : price,'quantity' : 1,'delivery_stauts' : 'OG', 'user_id': user_id,'order_dt': order_dt,'supplier_id':thisSupplier['username']})
+#             if writeResult.inserted_id ==order_id:
+#
+#                 no_orders=thisSupplier['no_orders']
+#                 if thisSupplier is not None:
+#                     result= supplier.update_one({'product_id' : product_id },{"$set" : {'no_orders' : str(int(no_orders)+1)}})
+#                     if result.modified_count >0:
+#                        print('if block supplier')
+#                        return redirect(url_for('orderList'))
+#                     else:
+#                        order_details.delete_one({ "_id" : order_id} )
+#                        print('else block supplier')
+#
+#                        return result
+#             else:
+#                 return json.dumps(writeResult)
+#         except pymongo.errors.DuplicateKeyError as e:
+#             print('IN exception')
+
 @app.route('/placeOrder',methods=['POST','GET'])
 @login_required
 def placeOrder():
     if request.method == 'POST':
         recievedData = request.json['info']
-        order_details = mongo.db.order_details
-        supplier=mongo.db.supplier
+        order_details_staging = mongo.db.order_details_staging
+        sub_contracotor_details=mongo.db.supplier
+        #supplier=mongo.db.supplier
         user=session['username']
-        product_id = recievedData['product_id'] 
-        product_name=recievedData['product_name'] 
-        price=recievedData['price_per_qty'] 
+        _id = recievedData['_id']
+        product_id = recievedData['product_id']
+        product_name=recievedData['product_name']
+        Product_type=recievedData['Product_type']
+        product_description=recievedData['product_description']
+        price=recievedData['price_per_qty']
+        no_orders=recievedData['no_orders']
+        new_order=recievedData['new_order']
+        sub_contractor_id=recievedData['s_user_name']
+        sub_product_id=product_id+sub_contractor_id
+        product_quantity=recievedData['product_quantity']
         order_id=user+str(randint(10000,99999))
-        user_id=user   
         now = datetime.datetime.now()
         order_dt= now.strftime("%Y-%m-%d %H:%M")
-        thisSupplier = supplier.find_one({'product_id' : product_id})
+        thisSubContractor = sub_contracotor_details.find_one({'_id' : _id})
+        available_quantity = thisSubContractor['no_orders']
+        print(thisSubContractor)
         try:
-            writeResult=order_details.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,'product_name' : product_name, 'price' : price,'quantity' : 1,'delivery_stauts' : 'OG', 'user_id': user_id,'order_dt': order_dt,'supplier_id':thisSupplier['username']})
-            if writeResult.inserted_id ==order_id:
-            
-                no_orders=thisSupplier['no_orders']
-                if thisSupplier is not None:
-                    result= supplier.update_one({'product_id' : product_id },{"$set" : {'no_orders' : str(int(no_orders)+1)}})
-                    if result.modified_count >0:
-                       print('if block supplier')
-                       return redirect(url_for('orderList'))
-                    else:
-                       order_details.delete_one({ "_id" : order_id} )
-                       print('else block supplier')
-                       
-                       return result
-            else:
-                return json.dumps(writeResult) 
+            writeResult=order_details_staging.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,
+                                                          'sub_product_id' : sub_product_id,'sup_product_id' : '',
+                                                          'product_name' : product_name,'Product_type' : Product_type,
+                                                          'product_description' : product_description,
+                                                          'price' : str(price),
+                                                          'quantity' : str(new_order),
+                                                          'delivery_stauts' : 'OG',
+                                                          'order_dt': order_dt,'supplier_id':user,'sub_contractor_id' : sub_contractor_id})
+            order=int(new_order)+int(thisSubContractor['no_orders'])
+
+            #return redirect(url_for('subcontract'))
+
+            result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
+            if result.modified_count > 0:
+                data = {
+                    'product_id': product_id,
+                    'product_name': product_name,
+                    'product_type': Product_type,
+                    'product_description': product_description,
+                    'price_per_qty': price,
+                    'no_orders': available_quantity - new_order,
+                    'new_order': new_order,
+                    'flag' : 'success'
+                  }
+            else :
+                 data = {
+                     'product_id': product_id,
+                     'product_name': product_name,
+                     'product_type': Product_type,
+                     'product_description': product_description,
+                     'price_per_qty': price,
+                     'no_orders': available_quantity,
+                     'new_order': new_order,
+                     'flag' : 'error'
+                 }
+             return json.dumps(data)
         except pymongo.errors.DuplicateKeyError as e:
             print('IN exception')
 
