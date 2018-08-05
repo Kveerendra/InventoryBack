@@ -111,7 +111,7 @@ def addproduct():
         delivery_day=data['product_delivery']
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
-        supplier.insert({'_id':pname,'product_id':pname,'product_name' : productname , 'username' : user['username'],'product_type' : Producttype, 'product_description' : description, 'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
+        supplier.insert_one({'_id':pname,'product_id':pname,'product_name' : productname , 'username' : user['username'],'product_type' : Producttype, 'product_description' : description, 'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
         
         return json.dumps(data)	
         
@@ -130,6 +130,7 @@ def showproducts():
 
      productSnapShot=[]
      for productStatus in product_snapshot:
+        print(productStatus)
         qty=int(productStatus['product_quantity']) - int(productStatus['no_orders'])
         oSnapshot={
                 'product_id': productStatus['product_id'],
@@ -137,7 +138,8 @@ def showproducts():
                 'price_per_qty' : productStatus['price_per_qty'],
                 'product_description' : productStatus['product_description'],
                 'product_quantity' :qty,
-                'delivery_day' : productStatus['delivery_day']
+                'delivery_day' : productStatus['delivery_day'],
+                'username' : productStatus['username']
                 }
         productSnapShot.append(oSnapshot)
 
@@ -302,7 +304,7 @@ def register():
             district=request.get_json(force=True).get('district') #request.form['district']
             pincode=request.get_json(force=True).get('pincode') #request.form['pincode']
             hashpass=request.get_json(force=True).get('pincode') #request.form['pincode']
-            users.insert({'name' : name, 'username' : uname,'password' : hashpass,'partner' : partner,'location' : location,'district': district,'pincode': pincode})
+            users.insert_one({'name' : name, 'username' : uname,'password' : hashpass,'partner' : partner,'location' : location,'district': district,'pincode': pincode})
             params=[uname,hashpass]
             #return render_template('Register_Sucess.html',params=params)
             data = {
@@ -331,7 +333,7 @@ def upload():
         for item in parsed:
             existing_user = users.find_one({'name' : item['name']})
             if existing_user is None:
-                users.insert(item)
+                users.insert_one(item)
                 data = {
 		             'existing_user' : existing_user,
 			     'item' : str(item)
@@ -358,7 +360,7 @@ def aupload():
             print(item)
             existing_user =product_master.find_one({'product_id': item['product_id']})
             if existing_user is None:
-                product_master.insert(item)
+                product_master.insert_one(item)
                 data = {
 			      'existing_user' : existing_user,
 			      'item' : str(item)
@@ -558,7 +560,7 @@ def placeOrder():
                      'new_order': new_order,
                      'flag' : 'error'
                  }
-             return json.dumps(data)
+            return json.dumps(data)
         except pymongo.errors.DuplicateKeyError as e:
             print('IN exception')
 
@@ -876,7 +878,7 @@ def insertMasterData():
         pname = productname+'_'+str(randint(10000,99999))
         Producttype = data['product_type']  
         description=data['product_description']
-        product_master.insert({'_id':pname,'product_id':pname,'product_name' : productname ,'product_type' : Producttype,'product_description' : description})
+        product_master.insert_one({'_id':pname,'product_id':pname,'product_name' : productname ,'product_type' : Producttype,'product_description' : description})
         
         
     return getProducts
