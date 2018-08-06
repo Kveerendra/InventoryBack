@@ -599,7 +599,7 @@ def updateOrder():
     
     return render_template('updateOrder.html')
     #return order_status_snapshot
-@app.route('/getOrderData',methods=['POST','GET'])
+@app.route('/s',methods=['POST','GET'])
 def getOrderData():
 
      order_details = mongo.db.order_details
