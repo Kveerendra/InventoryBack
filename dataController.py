@@ -130,7 +130,6 @@ def showproducts():
 
      productSnapShot=[]
      for productStatus in product_snapshot:
-        print(productStatus)
         qty=int(productStatus['product_quantity']) - int(productStatus['no_orders'])
         oSnapshot={
                 'product_id': productStatus['product_id'],
