@@ -377,7 +377,7 @@ def aupload():
 @login_required #updatepoduct, upload, aupload, addtowhishlist
 def addToWishList():
     if request.method == 'POST':
-        recievedData = request.json['info']
+        recievedData = request.get_json(force=True).get('info') 
         wish_list_details = mongo.db.wish_list_details
         #supplier=mongo.db.supplier
         user=session['username']
@@ -497,15 +497,14 @@ def orderList1():
 #         except pymongo.errors.DuplicateKeyError as e:
 #             print('IN exception')
 
-@app.route('/placeOrder',methods=['POST','GET'])
-@login_required
+@app.route('/placeOrder',methods=['POST'])
 def placeOrder():
     if request.method == 'POST':
-        recievedData = request.json['info']
+        recievedData = request.get_json(force=True).get('info') 
         order_details_staging = mongo.db.order_details_staging
         sub_contracotor_details=mongo.db.supplier
         #supplier=mongo.db.supplier
-        user=session['username']
+        #user=session['username']
         #_id = recievedData['_id']
         product_id = recievedData['product_id']
         product_name=recievedData['product_name']
@@ -521,7 +520,7 @@ def placeOrder():
         now = datetime.datetime.now()
         order_dt= now.strftime("%Y-%m-%d %H:%M")
         #thisSubContractor = sub_contracotor_details.find_one({'_id' : _id})
-	thisSubContractor = sub_contracotor_details.find_one({'_id' :sub_contractor_id})
+        thisSubContractor = sub_contracotor_details.find_one({'_id' :sub_contractor_id})
         available_quantity = thisSubContractor['no_orders']
         #print(thisSubContractor)
         try:
@@ -538,7 +537,7 @@ def placeOrder():
             #return redirect(url_for('subcontract'))
 
             #result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
-	    result=sub_contracotor_details.update_one({'_id': sub_contractor_id}, {"$set": {'no_orders': str(order)}})
+            result=sub_contracotor_details.update_one({'_id': sub_contractor_id}, {"$set": {'no_orders': str(order)}})
             if result.modified_count > 0:
                 data = {
                     'product_id': product_id,
