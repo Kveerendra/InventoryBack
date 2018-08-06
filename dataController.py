@@ -520,9 +520,10 @@ def placeOrder():
         order_id=user+str(randint(10000,99999))
         now = datetime.datetime.now()
         order_dt= now.strftime("%Y-%m-%d %H:%M")
-        thisSubContractor = sub_contracotor_details.find_one({'_id' : _id})
+        #thisSubContractor = sub_contracotor_details.find_one({'_id' : _id})
+	thisSubContractor = sub_contracotor_details.find_one({'_id' :sub_contractor_id})
         available_quantity = thisSubContractor['no_orders']
-        print(thisSubContractor)
+        #print(thisSubContractor)
         try:
             writeResult=order_details_staging.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,
                                                           'sub_product_id' : sub_product_id,'sup_product_id' : '',
@@ -536,7 +537,8 @@ def placeOrder():
 
             #return redirect(url_for('subcontract'))
 
-            result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
+            #result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
+	    result=sub_contracotor_details.update_one({'_id': sub_contractor_id}, {"$set": {'no_orders': str(order)}})
             if result.modified_count > 0:
                 data = {
                     'product_id': product_id,
@@ -546,6 +548,7 @@ def placeOrder():
                     'price_per_qty': price,
                     'no_orders': available_quantity - new_order,
                     'new_order': new_order,
+		    'user': user,
                     'flag' : 'success'
                   }
             else :
@@ -557,6 +560,7 @@ def placeOrder():
                      'price_per_qty': price,
                      'no_orders': available_quantity,
                      'new_order': new_order,
+		     'user' : user,
                      'flag' : 'error'
                  }
             return json.dumps(data)
