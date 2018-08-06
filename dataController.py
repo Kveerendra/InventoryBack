@@ -496,7 +496,14 @@ def orderList1():
 #                 return json.dumps(writeResult)
 #         except pymongo.errors.DuplicateKeyError as e:
 #             print('IN exception')
-
+#To get the order status
+ @app.route('/getOrderStatus',methods=['POST','GET'])
+ def getOrderStatus():
+    if request.method == 'POST':
+        order_details = mongo.db.order_details
+        recievedData = request.get_json(force=True).get('info')
+        sub_contractor_id = recievedData['sub_contractor_id']
+        orders = order_details.find({'sub_contractor_id': sub_contractor_id})
 @app.route('/placeOrder',methods=['POST'])
 def placeOrder():
     if request.method == 'POST':
