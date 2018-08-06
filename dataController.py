@@ -506,7 +506,7 @@ def placeOrder():
         sub_contracotor_details=mongo.db.supplier
         #supplier=mongo.db.supplier
         user=session['username']
-        _id = recievedData['_id']
+        #_id = recievedData['_id']
         product_id = recievedData['product_id']
         product_name=recievedData['product_name']
         Product_type=recievedData['Product_type']
