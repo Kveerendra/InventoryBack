@@ -511,10 +511,10 @@ def placeOrder():
         product_name=recievedData['product_name']
         Product_type=recievedData['Product_type']
         product_description=recievedData['product_description']
-        price=recievedData['price_per_qty']
-        no_orders=recievedData['no_orders']
-        new_order=recievedData['new_order']
-        sub_contractor_id=recievedData['s_user_name']
+        price=recievedData['product_price']
+        no_orders=recievedData['product_quantity']
+        new_order=recievedData['quantity_ordered']
+        sub_contractor_id=recievedData['username']
         sub_product_id=product_id+sub_contractor_id
         product_quantity=recievedData['product_quantity']
         order_id=user+str(randint(10000,99999))
@@ -546,7 +546,6 @@ def placeOrder():
                     'price_per_qty': price,
                     'no_orders': available_quantity - new_order,
                     'new_order': new_order,
-		    'user' : user,
                     'flag' : 'success'
                   }
             else :
@@ -558,7 +557,6 @@ def placeOrder():
                      'price_per_qty': price,
                      'no_orders': available_quantity,
                      'new_order': new_order,
-		     'user' : user,
                      'flag' : 'error'
                  }
             return json.dumps(data)
@@ -601,7 +599,7 @@ def updateOrder():
     
     return render_template('updateOrder.html')
     #return order_status_snapshot
-@app.route('/s',methods=['POST','GET'])
+@app.route('/getOrderData',methods=['POST','GET'])
 def getOrderData():
 
      order_details = mongo.db.order_details
