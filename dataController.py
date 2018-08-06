@@ -547,7 +547,8 @@ def placeOrder():
                     'price_per_qty': price,
                     'no_orders': available_quantity - new_order,
                     'new_order': new_order,
-		    'user': user,
+		              'user': user,
+                    'delivery_stauts' : 'OG',
                     'flag' : 'success'
                   }
             else :
@@ -559,7 +560,8 @@ def placeOrder():
                      'price_per_qty': price,
                      'no_orders': available_quantity,
                      'new_order': new_order,
-		     'user' : user,
+		               'user' : user,
+                     'delivery_stauts' : 'OG',
                      'flag' : 'error'
                  }
             return json.dumps(data)
