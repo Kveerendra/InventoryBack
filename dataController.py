@@ -134,11 +134,12 @@ def showproducts():
         oSnapshot={
                 'product_id': productStatus['product_id'],
                 'product_name': productStatus['product_name'],
-                'price_per_qty' : productStatus['price_per_qty'],
+                'product_price' : productStatus['price_per_qty'],
                 'product_description' : productStatus['product_description'],
                 'product_quantity' :qty,
                 'delivery_day' : productStatus['delivery_day'],
-                'username' : productStatus['username']
+                'product_type' : productStatus['product_type'],
+                's_user_name' : productStatus['username']
                 }
         productSnapShot.append(oSnapshot)
 
@@ -497,8 +498,8 @@ def orderList1():
 #         except pymongo.errors.DuplicateKeyError as e:
 #             print('IN exception')
 #To get the order status
- @app.route('/getOrderStatus',methods=['POST','GET'])
- def getOrderStatus():
+@app.route('/getOrderStatus',methods=['POST','GET'])
+def getOrderStatus():
     if request.method == 'POST':
         order_details = mongo.db.order_details
         recievedData = request.get_json(force=True).get('info')
@@ -515,7 +516,7 @@ def placeOrder():
         #_id = recievedData['_id']
         product_id = recievedData['product_id']
         product_name=recievedData['product_name']
-        Product_type=recievedData['Product_type']
+        Product_type=recievedData['product_type']
         product_description=recievedData['product_description']
         price=recievedData['product_price']
         no_orders=recievedData['product_quantity']
@@ -526,7 +527,7 @@ def placeOrder():
         sub_contractor_id=recievedData['s_user_name'] #Added-Snigdha
         sub_product_id=product_id+sub_contractor_id
         product_quantity=recievedData['product_quantity']
-        order_id=user+str(randint(10000,99999))
+        order_id=supplier_id+str(randint(10000,99999))
         now = datetime.datetime.now()
         order_dt= now.strftime("%Y-%m-%d %H:%M")
         #thisSubContractor = sub_contracotor_details.find_one({'_id' : _id})
