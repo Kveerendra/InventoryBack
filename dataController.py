@@ -520,7 +520,9 @@ def placeOrder():
         price=recievedData['product_price']
         no_orders=recievedData['product_quantity']
         new_order=recievedData['quantity_ordered']
-        sub_contractor_id=recievedData['username']
+        #sub_contractor_id=recievedData['username']
+        supplier_id=recievedData['username']
+        sub_contractor_id=recievedData['s_user_name'] #Added-Snigdha
         sub_product_id=product_id+sub_contractor_id
         product_quantity=recievedData['product_quantity']
         order_id=user+str(randint(10000,99999))
@@ -538,7 +540,7 @@ def placeOrder():
                                                           'price' : str(price),
                                                           'quantity' : str(new_order),
                                                           'delivery_stauts' : 'OG',
-                                                          'order_dt': order_dt,'supplier_id':user,'sub_contractor_id' : sub_contractor_id})
+                                                          'order_dt': order_dt,'supplier_id':supplier_id,'sub_contractor_id' : sub_contractor_id})
             order=int(new_order)+int(thisSubContractor['no_orders'])
 
             #return redirect(url_for('subcontract'))
@@ -554,7 +556,7 @@ def placeOrder():
                     'price_per_qty': price,
                     'no_orders': available_quantity - new_order,
                     'new_order': new_order,
-		              'user': user,
+		    'user': supplier_id,
                     'delivery_stauts' : 'OG',
                     'flag' : 'success'
                   }
@@ -567,13 +569,14 @@ def placeOrder():
                      'price_per_qty': price,
                      'no_orders': available_quantity,
                      'new_order': new_order,
-		               'user' : user,
+		     'user' : supplier_id,
                      'delivery_stauts' : 'OG',
                      'flag' : 'error'
                  }
             return json.dumps(data)
         except pymongo.errors.DuplicateKeyError as e:
             print('IN exception')
+
 
         
         
