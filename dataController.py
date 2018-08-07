@@ -201,8 +201,7 @@ def updateProduct():
 def outofstock():
     return render_template('outofstock.html')
  
-@app.route('/stock',methods=['POST','GET'])
-@login_required
+@app.route('/stock',methods=['GET'])
 def stock():
 
      product_snapshot = mongo.db.supplier
@@ -216,7 +215,9 @@ def stock():
                 'product_description': productStatus['product_description'],
                 'price_per_qty' : productStatus['price_per_qty'],
                 'product_quantity' : int(productStatus['product_quantity']) - int(productStatus['no_orders']),
-                'delivery_day' : productStatus['delivery_day']
+                'delivery_day' : productStatus['delivery_day'],
+                'product_type' : productStatus['product_type'],
+                's_user_name' : productStatus['username']
                 }
         avail=int(productStatus['product_quantity']) - int(productStatus['no_orders'])
         if avail == 0:
@@ -375,13 +376,13 @@ def aupload():
     #return render_template('excel_aupload.html')
 
 @app.route('/addToWishList',methods=['POST','GET'])
-@login_required #updatepoduct, upload, aupload, addtowhishlist
+#@login_required #updatepoduct, upload, aupload, addtowhishlist
 def addToWishList():
     if request.method == 'POST':
         recievedData = request.get_json(force=True).get('info') 
         wish_list_details = mongo.db.wish_list_details
         #supplier=mongo.db.supplier
-        user=session['username']
+        user=request.get_json(force=True).get('username')
         product_id = recievedData['product_id'] 
         product_name=recievedData['product_name'] 
         product_type=recievedData['product_type'] 
@@ -659,7 +660,7 @@ def getOrderData():
                 'product_name': order['product_name'],
                 'price' : order['price'],
                 'quantity' : order['quantity'],
-                 'order_dt' : order['order_dt'],
+                'order_dt' : order['order_dt'],
                 'delivery_stauts' : order['delivery_stauts']
                 }
         orderList.append(tempOrder)
