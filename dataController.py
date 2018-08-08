@@ -591,7 +591,7 @@ def orderDetails():
 @app.route('/showOrderDetails',methods=['POST','GET'])
 def showOrderDetails():
 
-     order_details = mongo.db.order_details
+     order_details_staging = mongo.db.order_details_staging
      user=request.get_json(force=True).get('username')
      orders=order_details_staging.find({'supplier_id' : user})
      print(user)
