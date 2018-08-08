@@ -591,7 +591,7 @@ def orderDetails():
     return render_template('orderDetails.html')
     #return order_status_snapshot
 #show all details for a supplier
-@app.route('/showOrderDetails',methods=['POST','GET'])
+@app.route('/showmyOrderDetails',methods=['POST'])
 def showOrderDetails():
 
      order_details_staging = mongo.db.order_details_staging
@@ -615,25 +615,28 @@ def showOrderDetails():
      return json.dumps(orderList)
 
 #show pending orders
-@app.route('/showOrderDetails',methods=['POST','GET'])
+@app.route('/showOrderDetails',methods=['POST'])
 def showPendingOrderDetails():
 
      order_details_staging = mongo.db.order_details_staging
+     print(request)
      user=request.get_json(force=True).get('username')
-     orders=order_details_staging.find({'supplier_id' : user, 'delivery_stauts': 'OG'})
+     orders=order_details_staging.find({'sub_contractor_id' : user, 'delivery_stauts': 'OG'})
      print(user)
      #return render_template('OrderList.html',orderStatusSnapShot=order_status_snapshot)
      orderList=[]
      for order in orders:
         print(order['product_name'])
         tempOrder={
-                'order_id': order['order_id'],
+                's_user_name':order['sub_contractor_id'],
                 'product_id': order['product_id'],
                 'product_name': order['product_name'],
-                'price' : order['price'],
-                'quantity' : order['quantity'],
-                'order_dt' : order['order_dt'],
-                'delivery_stauts' : order['delivery_stauts']
+                'product_price' : order['price'],
+                'quantity_ordered' : order['quantity'],
+                'order_date' : order['order_dt'],
+                'delivery_stauts' : order['delivery_stauts'],
+                'order_id': order['order_id']
+
                 }
         orderList.append(tempOrder)
      return json.dumps(orderList)
