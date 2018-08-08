@@ -532,7 +532,7 @@ def placeOrder():
         now = datetime.datetime.now()
         order_dt= now.strftime("%Y-%m-%d %H:%M")
         #thisSubContractor = sub_contracotor_details.find_one({'_id' : _id})
-        thisSubContractor = sub_contracotor_details.find_one({'_id' :sub_contractor_id})
+        thisSubContractor = sub_contracotor_details.find_one({'_id' :product_id})
         available_quantity = thisSubContractor['no_orders']
         #print(thisSubContractor)
         try:
@@ -549,7 +549,7 @@ def placeOrder():
             #return redirect(url_for('subcontract'))
 
             #result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
-            result=sub_contracotor_details.update_one({'_id': sub_contractor_id}, {"$set": {'no_orders': str(order)}})
+            result=sub_contracotor_details.update_one({'_id': product_id}, {"$set": {'no_orders': str(order)}})
             if result.modified_count > 0:
                 data = {
                     'product_id': product_id,
