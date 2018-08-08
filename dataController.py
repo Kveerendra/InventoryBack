@@ -171,7 +171,7 @@ def updateProduct():
         productinfo=request.json['info']
         pname = productinfo['product_name'] 
         product_id=productinfo['product_id']
-        price_per_qty=productinfo['price_per_qty']
+        price_per_qty=productinfo['product_price']
         quantity=productinfo['product_quantity']
         delivery_day=productinfo['delivery_day']
         now = datetime.datetime.now()
@@ -379,16 +379,17 @@ def aupload():
 #@login_required #updatepoduct, upload, aupload, addtowhishlist
 def addToWishList():
     if request.method == 'POST':
-        recievedData = request.get_json(force=True).get('info') 
+        recievedData = request.get_json(force=True).get('product') 
         wish_list_details = mongo.db.wish_list_details
         #supplier=mongo.db.supplier
-        user=request.get_json(force=True).get('username')
+        userInfo=request.get_json(force=True).get('userInfo')
+        user = userInfo['username']
         product_id = recievedData['product_id'] 
         product_name=recievedData['product_name'] 
         product_type=recievedData['product_type'] 
         product_description=recievedData['product_description'] 
-        price=recievedData['price_per_qty'] 
-        no_orders=recievedData['no_orders']
+        price=recievedData['product_price'] 
+        no_orders=recievedData['quantity_ordered']
         sub_contractor_id=recievedData['s_user_name']
         sub_product_id=product_id+sub_contractor_id
       #  available_quantity=recievedData['available_quantity']
@@ -415,6 +416,7 @@ def addToWishList():
                                                           'quantity' : str(no_orders),
                                                           'wish_stauts' : 'PE',
                                                           'wish_dt': order_dt,'supplier_id':user,'sub_contractor_id' : sub_contractor_id})
+                wish_list_detail=wish_list_details.find_one({'wish_id' : wish_id})
                 data = {
 			       '_id' : wish_list_detail['wish_id'],
 				'wish_id':wish_id,
@@ -627,8 +629,8 @@ def showOrderDetails():
         orderList.append(temp)
      return json.dumps(orderList)
 #show pending orders
-@app.route('/showOrderDetails',methods=['POST'])
-def showPendingOrderDetails():
+@app.route('/showOrderPendingForApproval',methods=['POST'])
+def showOrderPendingForApproval():
 
      order_details_staging = mongo.db.order_details_staging
      print(request)
@@ -711,10 +713,16 @@ def getOrderData():
 #                   return result
 #
 #     return redirect(url_for('updateOrder'))
+@app.route('/updateOrderDetails', methods=['POST'])
+def updateOrderDetailsDummy():
+    userInfo=request.get_json(force=True).get('userInfo')
+    print(userInfo)
+    productRecord=request.get_json(force=True).get('productRecord')
+    #productRecord['delivery_stauts'] would be 'Decline' or 'Approved'
+    print(productRecord)
 
 
-@app.route('/updateOrderDetails', methods=['POST', 'GET'])
-@login_required
+@app.route('/updateOrderDetails1', methods=['POST'])
 def updateOrderDetails():
     if request.method == 'POST':
         order_details = mongo.db.order_details
@@ -940,6 +948,29 @@ def insertMasterData():
         
         
     return getProducts
+
+@app.route('/getWishList', methods=['POST'])
+def getWishList():
+    userInfo=request.get_json(force=True).get('userInfo')
+    wish_list_details = mongo.db.wish_list_details
+    wish_list_detail=wish_list_details.find({"supplier_id" : userInfo['username']})
+    retObj =[]
+    for product in wish_list_detail:
+        #qty=int(productStatus['product_quantity']) - int(productStatus['no_orders'])
+        tempProduct={
+                'product_id': product['product_id'],
+                'product_name': product['product_name'],
+                'product_type': product['product_type'],
+                'product_description': product['product_description'],
+                'product_price':product['price'],
+                'product_quantity':product['quantity'],
+                'wish_status': product['wish_stauts'],
+                'wisher_id':product['wish_id']
+                }
+        retObj.append(tempProduct)
+    print(retObj)
+    return json.dumps(retObj)
+
 
 if __name__ == '__main__':
     app.secret_key = 'mysecret'
