@@ -591,12 +591,14 @@ def orderDetails():
     return render_template('orderDetails.html')
     #return order_status_snapshot
 #show all details for a supplier
-@app.route('/showmyOrderDetails',methods=['POST'])
+@app.route('/showOrderDetails',methods=['POST','GET'])
 def showOrderDetails():
 
      order_details_staging = mongo.db.order_details_staging
+     order_details = mongo.db.order_details
      user=request.get_json(force=True).get('username')
      orders=order_details_staging.find({'supplier_id' : user})
+     ordersDetail=order_details.find({'supplier_id' : user})
      print(user)
      #return render_template('OrderList.html',orderStatusSnapShot=order_status_snapshot)
      orderList=[]
@@ -608,12 +610,22 @@ def showOrderDetails():
                 'product_name': order['product_name'],
                 'price' : order['price'],
                 'quantity' : order['quantity'],
-                'order_dt' : order['order_dt'],
+                 'order_dt' : order['order_dt'],
                 'delivery_stauts' : order['delivery_stauts']
                 }
         orderList.append(tempOrder)
+     for ordr in ordersDetail:
+        temp={
+                'order_id': ordr['order_id'],
+                'product_id': ordr['product_id'],
+                'product_name': ordr['product_name'],
+                'price' : ordr['price'],
+                'quantity' : ordr['quantity'],
+                 'order_dt' : ordr['order_dt'],
+                'delivery_stauts' : ordr['delivery_stauts']
+                }
+        orderList.append(temp)
      return json.dumps(orderList)
-
 #show pending orders
 @app.route('/showOrderDetails',methods=['POST'])
 def showPendingOrderDetails():
