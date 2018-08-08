@@ -520,9 +520,10 @@ def placeOrder():
         price=recievedData['product_price']
         no_orders=recievedData['product_quantity']
         new_order=recievedData['quantity_ordered']
-        #sub_contractor_id=recievedData['username']
-        supplier_id=recievedData['username']
-        sub_contractor_id=recievedData['s_user_name'] #Added-Snigdha
+        sub_contractor_id=recievedData['username']
+        #supplier_id=recievedData['username']
+        supplier_id = ' '
+        #sub_contractor_id=recievedData['s_user_name'] #Added-Snigdha
         sub_product_id=product_id+sub_contractor_id
         product_quantity=recievedData['product_quantity']
         order_id=user+str(randint(10000,99999))
@@ -556,7 +557,7 @@ def placeOrder():
                     'price_per_qty': price,
                     'no_orders': available_quantity - new_order,
                     'new_order': new_order,
-		    'user': supplier_id,
+		    'user': sub_contractor_id,
                     'delivery_stauts' : 'OG',
                     'flag' : 'success'
                   }
@@ -569,7 +570,7 @@ def placeOrder():
                      'price_per_qty': price,
                      'no_orders': available_quantity,
                      'new_order': new_order,
-		     'user' : supplier_id,
+		     'user' : sub_contractor_id,
                      'delivery_stauts' : 'OG',
                      'flag' : 'error'
                  }
