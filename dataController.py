@@ -521,9 +521,9 @@ def placeOrder():
         no_orders=recievedData['product_quantity']
         new_order=recievedData['quantity_ordered']
         sub_contractor_id=recievedData['username']
-        #supplier_id=recievedData['username']
-        supplier_id = ' '
-        #sub_contractor_id=recievedData['s_user_name'] #Added-Snigdha
+        supplier_id=recievedData['username']
+        #supplier_id = ' '
+        sub_contractor_id=recievedData['s_user_name'] #Added-Snigdha
         sub_product_id=product_id+sub_contractor_id
         product_quantity=recievedData['product_quantity']
         order_id=user+str(randint(10000,99999))
