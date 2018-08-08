@@ -721,7 +721,7 @@ def updateOrderDetails():
         ordered_quantity = record['quantity']
         print(ordered_quantity)
 
-        thisOrder = order_details.find_one({'order_id': order_id})
+        thisOrder = order_details_staging.find_one({'order_id': order_id})
 
         thisSubContractor = supplier.find_one({'_id': sub_product_id})
 
