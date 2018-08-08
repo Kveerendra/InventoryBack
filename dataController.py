@@ -593,7 +593,8 @@ def showOrderDetails():
 
      order_details = mongo.db.order_details
      user=request.get_json(force=True).get('username')
-     orders=order_details.find({'user_id' : user})
+     orders=order_details_staging.find({'supplier_id' : user})
+     print(user)
      #return render_template('OrderList.html',orderStatusSnapShot=order_status_snapshot)
      orderList=[]
      for order in orders:
