@@ -167,25 +167,24 @@ def showoneproduct():
 def updateProduct():
     if request.method == 'POST':
         supplier = mongo.db.supplier
-        user=session['username']
-        productinfo=request.json['info']
-        pname = productinfo['product_name'] 
+        user=request.get_json(force=True).get('user')
+        productinfo=request.get_json(force=True).get('info')
+        product_name = productinfo['product_name'] 
         product_id=productinfo['product_id']
         product_price=productinfo['product_price']
         quantity=productinfo['product_quantity']
         delivery_day=productinfo['delivery_day']
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
-        supplier.update_one({'product_id':product_id},{'$set':{'product_name' : pname , 'username' : user,'product_price' : product_price,'product_quantity': quantity,'delivery_day': delivery_day,'product_create_dt': pcreate_dt}})
+        supplier.update_one({'product_id':product_id},{'$set':{'product_name' : product_name , 'username' : user,'product_price' : product_price,'product_quantity': quantity,'delivery_day': delivery_day,'product_create_dt': pcreate_dt}})
         formData = {
-		        product_id: product_id,
-                        product_name: pname,
-			username: user,
-                        product_price: product_price,
-                        product_quantity: quantity,
-                        delivery_day: delivery_day,
-			product_create_dt: pcreate_dt
-				
+		        'product_id': product_id,
+                'product_name': product_name,
+			    'username': user['username'],
+                'product_price': product_price,
+                'product_quantity': quantity,
+                'delivery_day': delivery_day,
+			    'product_create_dt': pcreate_dt
                         };  
         data = {
                     'info' : formData,
@@ -275,6 +274,12 @@ def login():
                     'role' : role,
                     'error' : error
             }
+        else:
+            error = 'Invalid username or password'
+            data  = {
+                    'template' : None,
+                   'error' : error
+                }
     else:
         error = 'Invalid username or password'
         data  = {
@@ -769,10 +774,8 @@ def updateOrderDetails():
 
         thisSubContractor = supplier.find_one({'_id': sub_product_id})
 
-        if thisOrder is None:
-            print("None")
+        if thisOrder is not None:
             if delivery_stauts == 'CO':
-                print("here")
                 writeResult = order_details.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
                                                         'sub_product_id': sub_product_id,
                                                         'sup_product_id': sup_product_id,
@@ -996,6 +999,48 @@ def getWishList():
     print(retObj)
     return json.dumps(retObj)
 
+@app.route('/getMyOutOfStockProducts', methods=['POST'])
+def getMyOutOfStockProducts():
+    userInfo=request.get_json(force=True).get('userInfo')
+    supplier = mongo.db.supplier
+    products_data=supplier.find({"username" :userInfo['username'],"product_quantity":0})
+    products=[]
+    for product in products_data:
+        #qty=int(productStatus['product_quantity']) - int(productStatus['no_orders'])
+        tempProduct={
+                'product_id': product['product_id'],
+                'product_name': product['product_name'],
+                'product_type': product['product_type'],
+                'product_description': product['product_description'],
+                'product_price': product['product_price'],
+                'product_quantity': product['product_quantity'],
+                'delivery_day': product['delivery_day']
+                }
+        products.append(tempProduct)
+    return json.dumps(products)
+
+
+@app.route('/getAvailableSubContractorsForProduct', methods=['POST'])
+def getAvailableSubContractorsForProduct():
+    userInfo=request.get_json(force=True).get('userInfo')
+    product=request.get_json(force=True).get('product')
+    supplier = mongo.db.supplier
+    products_data=supplier.find({"product_type":product["product_type"],"username" :{"$ne": userInfo['username']},"product_quantity":{"$ne": 0}})
+    products=[]
+    for product in products_data:
+        #qty=int(productStatus['product_quantity']) - int(productStatus['no_orders'])
+        tempProduct={
+                'product_id': product['product_id'],
+                'product_name': product['product_name'],
+                'product_type': product['product_type'],
+                'product_description': product['product_description'],
+                'product_price': product['product_price'],
+                'product_quantity': product['product_quantity'],
+                'delivery_day': product['delivery_day'],
+                's_user_name': product['username']
+                }
+        products.append(tempProduct)
+    return json.dumps(products)
 
 if __name__ == '__main__':
     app.secret_key = 'mysecret'
