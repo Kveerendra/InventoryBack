@@ -655,14 +655,20 @@ def showOrderPendingForApproval():
      for order in orders:
         print(order['product_name'])
         tempOrder={
-                's_user_name':order['sub_contractor_id'],
+                #'s_user_name':order['sub_contractor_id'],
+                'sub_contractor_id': order['sub_contractor_id'],
                 'product_id': order['product_id'],
                 'product_name': order['product_name'],
-                'product_price' : order['price'],
-                'quantity_ordered' : order['quantity'],
-                'order_date' : order['order_dt'],
+                'price' : order['price'],
+                'quantity' : order['quantity'],
+                'order_dt' : order['order_dt'],
                 'delivery_stauts' : order['delivery_stauts'],
-                'order_id': order['order_id']
+                'order_id': order['order_id'],
+                'Product_type' = order['Product_type'],
+                'product_description' = order['product_description'],
+                'sub_product_id' = order['product_id'] + order['sub_contractor_id'],
+                'sup_product_id' = order['product_id'] + order['supplier_id'],
+                'supplier_id' = order['supplier_id']
 
                 }
         orderList.append(tempOrder)
