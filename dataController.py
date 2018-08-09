@@ -104,14 +104,14 @@ def addproduct():
         print(data)
         productname = data['product_name']
         pname = productname+'_'+str(randint(10000,99999))
-        Producttype = data['product_type']  
+        product_type = data['product_type']  
         description=data['product_description']
-        price_per_qty=data['product_price']
+        product_price=data['product_price']
         quantity=data['product_quantity']
         delivery_day=data['product_delivery']
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
-        supplier.insert_one({'_id':pname,'product_id':pname,'product_name' : productname , 'username' : user['username'],'product_type' : Producttype, 'product_description' : description, 'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
+        supplier.insert_one({'_id':pname,'product_id':pname,'product_name' : productname , 'username' : user['username'],'product_type' : product_type, 'product_description' : description, 'product_price' : product_price,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
         
         return json.dumps(data)	
         
@@ -134,7 +134,7 @@ def showproducts():
         oSnapshot={
                 'product_id': productStatus['product_id'],
                 'product_name': productStatus['product_name'],
-                'product_price' : productStatus['price_per_qty'],
+                'product_price' : productStatus['product_price'],
                 'product_description' : productStatus['product_description'],
                 'product_quantity' :qty,
                 'delivery_day' : productStatus['delivery_day'],
@@ -156,7 +156,7 @@ def showoneproduct():
                 'product_id': productStatus['product_id'],
                 'product_name': productStatus['product_name'],
                 'product_description': productStatus['product_description'],
-                'price_per_qty' : productStatus['price_per_qty'],
+                'product_price' : productStatus['product_price'],
                                                           'product_quantity' : productStatus['product_quantity'],
                                                           'delivery_day' : productStatus['delivery_day']
                 }
@@ -171,17 +171,17 @@ def updateProduct():
         productinfo=request.json['info']
         pname = productinfo['product_name'] 
         product_id=productinfo['product_id']
-        price_per_qty=productinfo['product_price']
+        product_price=productinfo['product_price']
         quantity=productinfo['product_quantity']
         delivery_day=productinfo['delivery_day']
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
-        supplier.update_one({'product_id':product_id},{'$set':{'product_name' : pname , 'username' : user,'price_per_qty' : price_per_qty,'product_quantity': quantity,'delivery_day': delivery_day,'product_create_dt': pcreate_dt}})
+        supplier.update_one({'product_id':product_id},{'$set':{'product_name' : pname , 'username' : user,'product_price' : product_price,'product_quantity': quantity,'delivery_day': delivery_day,'product_create_dt': pcreate_dt}})
         formData = {
 		        product_id: product_id,
                         product_name: pname,
 			username: user,
-                        price_per_qty: price_per_qty,
+                        product_price: product_price,
                         product_quantity: quantity,
                         delivery_day: delivery_day,
 			product_create_dt: pcreate_dt
@@ -213,7 +213,7 @@ def stock():
                 'product_id': productStatus['product_id'],
                 'product_name': productStatus['product_name'],
                 'product_description': productStatus['product_description'],
-                'price_per_qty' : productStatus['price_per_qty'],
+                'product_price' : productStatus['product_price'],
                 'product_quantity' : int(productStatus['product_quantity']) - int(productStatus['no_orders']),
                 'delivery_day' : productStatus['delivery_day'],
                 'product_type' : productStatus['product_type'],
@@ -388,14 +388,14 @@ def addToWishList():
         product_name=recievedData['product_name'] 
         product_type=recievedData['product_type'] 
         product_description=recievedData['product_description'] 
-        price=recievedData['product_price'] 
+        product_price=recievedData['product_price'] 
         no_orders=recievedData['quantity_ordered']
         sub_contractor_id=recievedData['s_user_name']
         sub_product_id=product_id+sub_contractor_id
       #  available_quantity=recievedData['available_quantity']
         wish_id=user+product_id
         now = datetime.datetime.now()
-        order_dt= now.strftime("%Y-%m-%d %H:%M")
+        order_date= now.strftime("%Y-%m-%d %H:%M")
         wish_list_detail=wish_list_details.find_one({'wish_id' : wish_id})
         print(wish_list_detail)
         try:
@@ -412,10 +412,10 @@ def addToWishList():
                                                           'sub_product_id' : sub_product_id,'sup_product_id' : '',
                                                           'product_name' : product_name,'product_type' : product_type,
                                                           'product_description' : product_description, 
-                                                          'price' : str(price),
+                                                          'product_price' : str(product_price),
                                                           'quantity' : str(no_orders),
                                                           'wish_stauts' : 'PE',
-                                                          'wish_dt': order_dt,'supplier_id':user,'sub_contractor_id' : sub_contractor_id})
+                                                          'wish_dt': order_date,'supplier_id':user,'sub_contractor_id' : sub_contractor_id})
                 wish_list_detail=wish_list_details.find_one({'wish_id' : wish_id})
                 data = {
 			       '_id' : wish_list_detail['wish_id'],
@@ -426,10 +426,10 @@ def addToWishList():
                                 'product_name' : product_name,
 				'product_type' : product_type,
                                 'product_description' : product_description, 
-                                'price' : str(price),
+                                'product_price' : str(product_price),
                                 'quantity' : str(no_orders),
                                 'wish_stauts' : 'PE',
-                                'wish_dt': order_dt,
+                                'wish_dt': order_date,
 				'supplier_id':user,
 				'sub_contractor_id' : sub_contractor_id
 			    }
@@ -458,7 +458,7 @@ def orderList1():
                 'product_name': supplier['product_name'],
                 'product_type': supplier['product_type'],
                 'product_description' : supplier['product_description'],
-                'price_per_qty' : supplier['price_per_qty'],
+                'product_price' : supplier['product_price'],
                 'available_quantity' : available_quantity,
                 'delivery_day' : supplier['delivery_day']
                 }
@@ -475,14 +475,14 @@ def orderList1():
 #         user=session['username']
 #         product_id = recievedData['product_id']
 #         product_name=recievedData['product_name']
-#         price=recievedData['price_per_qty']
+#         price=recievedData['product_price']
 #         order_id=user+str(randint(10000,99999))
 #         user_id=user
 #         now = datetime.datetime.now()
-#         order_dt= now.strftime("%Y-%m-%d %H:%M")
+#         order_date= now.strftime("%Y-%m-%d %H:%M")
 #         thisSupplier = supplier.find_one({'product_id' : product_id})
 #         try:
-#             writeResult=order_details.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,'product_name' : product_name, 'price' : price,'quantity' : 1,'delivery_stauts' : 'OG', 'user_id': user_id,'order_dt': order_dt,'supplier_id':thisSupplier['username']})
+#             writeResult=order_details.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,'product_name' : product_name, 'price' : price,'quantity' : 1,'delivery_stauts' : 'OG', 'user_id': user_id,'order_date': order_date,'supplier_id':thisSupplier['username']})
 #             if writeResult.inserted_id ==order_id:
 #
 #                 no_orders=thisSupplier['no_orders']
@@ -519,9 +519,9 @@ def placeOrder():
         #_id = recievedData['_id']
         product_id = recievedData['product_id']
         product_name=recievedData['product_name']
-        Product_type=recievedData['product_type']
+        product_type=recievedData['product_type']
         product_description=recievedData['product_description']
-        price=recievedData['product_price']
+        product_price=recievedData['product_price']
         no_orders=recievedData['product_quantity']
         new_order=recievedData['quantity_ordered']
         sub_contractor_id=recievedData['username']
@@ -532,7 +532,7 @@ def placeOrder():
         product_quantity=recievedData['product_quantity']
         order_id=supplier_id+str(randint(10000,99999))
         now = datetime.datetime.now()
-        order_dt= now.strftime("%Y-%m-%d %H:%M")
+        order_date= now.strftime("%Y-%m-%d %H:%M")
         #thisSubContractor = sub_contracotor_details.find_one({'_id' : _id})
         thisSubContractor = sub_contracotor_details.find_one({'_id' :product_id})
         available_quantity = thisSubContractor['no_orders']
@@ -540,12 +540,12 @@ def placeOrder():
         try:
             writeResult=order_details_staging.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,
                                                           'sub_product_id' : sub_product_id,'sup_product_id' : '',
-                                                          'product_name' : product_name,'Product_type' : Product_type,
+                                                          'product_name' : product_name,'product_type' : product_type,
                                                           'product_description' : product_description,
-                                                          'price' : str(price),
+                                                          'product_price' : str(product_price),
                                                           'quantity' : str(new_order),
                                                           'delivery_stauts' : 'OG',
-                                                          'order_dt': order_dt,'supplier_id':supplier_id,'sub_contractor_id' : sub_contractor_id})
+                                                          'order_date': order_date,'supplier_id':supplier_id,'sub_contractor_id' : sub_contractor_id})
             order=int(new_order)+int(thisSubContractor['no_orders'])
 
             #return redirect(url_for('subcontract'))
@@ -556,9 +556,9 @@ def placeOrder():
                 data = {
                     'product_id': product_id,
                     'product_name': product_name,
-                    'product_type': Product_type,
+                    'product_type': product_type,
                     'product_description': product_description,
-                    'price_per_qty': price,
+                    'product_price': product_price,
                     'no_orders': available_quantity - new_order,
                     'new_order': new_order,
 		    'user': sub_contractor_id,
@@ -569,9 +569,9 @@ def placeOrder():
                  data = {
                      'product_id': product_id,
                      'product_name': product_name,
-                     'product_type': Product_type,
+                     'product_type': product_type,
                      'product_description': product_description,
-                     'price_per_qty': price,
+                     'product_price': product_price,
                      'no_orders': available_quantity,
                      'new_order': new_order,
 		     'user' : sub_contractor_id,
@@ -611,16 +611,16 @@ def showOrderDetails():
                 'order_id': order['order_id'],
                 'product_id': order['product_id'],
                 'product_name': order['product_name'],
-                'price' : order['price'],
-                'quantity' : order['quantity'],
-                'order_dt' : order['order_dt'],
+                'product_price' : order['product_price'],
+                'quantity_ordered' : order['quantity'],
+                'order_date' : order['order_date'],
                 'delivery_stauts' : order['delivery_stauts'],
                 'supplier_id' : user,
-                'sub_contractor_id' = order['sub_contractor_id'],
-                'sub_product_id' = order['product_id'] + order['sub_contractor_id'],
-                'sup_product_id' = order['product_id'] + order['supplier_id'],
-                'Product_type' = order['Product_type'],
-                'product_description' = order['product_description']
+                's_user_name' : order['sub_contractor_id'],
+                'sub_product_id' : order['product_id'] + order['sub_contractor_id'],
+                'sup_product_id' : order['product_id'] + order['supplier_id'],
+                'product_type' : order['product_type'],
+                'product_description' : order['product_description']
                 }
         orderList.append(tempOrder)
      for ordr in ordersDetail:
@@ -628,16 +628,16 @@ def showOrderDetails():
                 'order_id': ordr['order_id'],
                 'product_id': ordr['product_id'],
                 'product_name': ordr['product_name'],
-                'price' : ordr['price'],
-                'quantity' : ordr['quantity'],
-                'order_dt' : ordr['order_dt'],
+                'product_price' : ordr['product_price'],
+                'quantity_ordered' : ordr['quantity'],
+                'order_date' : ordr['order_date'],
                 'delivery_stauts' : ordr['delivery_stauts'],
                 'supplier_id' : user,
-                'sub_contractor_id' = ordr['sub_contractor_id']
-                'sub_product_id' = ordr['product_id'] + ordr['sub_contractor_id'],
-                'sup_product_id' = ordr['product_id'] + ordr['supplier_id'],
-                'Product_type' = ordr['Product_type'],
-                'product_description' = ordr['product_description']
+                's_user_name' : ordr['sub_contractor_id'],
+                'sub_product_id' : ordr['product_id'] + ordr['sub_contractor_id'],
+                'sup_product_id' : ordr['product_id'] + ordr['supplier_id'],
+                'product_type' : ordr['product_type'],
+                'product_description' : ordr['product_description']
                 }
         orderList.append(temp)
      return json.dumps(orderList)
@@ -656,19 +656,19 @@ def showOrderPendingForApproval():
         print(order['product_name'])
         tempOrder={
                 #'s_user_name':order['sub_contractor_id'],
-                'sub_contractor_id': order['sub_contractor_id'],
+                's_user_name': order['sub_contractor_id'],
                 'product_id': order['product_id'],
                 'product_name': order['product_name'],
-                'price' : order['price'],
-                'quantity' : order['quantity'],
-                'order_dt' : order['order_dt'],
+                'product_price' : order['product_price'],
+                'quantity_ordered' : order['quantity'],
+                'order_date' : order['order_date'],
                 'delivery_stauts' : order['delivery_stauts'],
                 'order_id': order['order_id'],
-                'Product_type' = order['Product_type'],
-                'product_description' = order['product_description'],
-                'sub_product_id' = order['product_id'] + order['sub_contractor_id'],
-                'sup_product_id' = order['product_id'] + order['supplier_id'],
-                'supplier_id' = order['supplier_id']
+                'product_type' : order['product_type'],
+                'product_description' : order['product_description'],
+                'sub_product_id' : order['product_id'] + order['sub_contractor_id'],
+                'sup_product_id' : order['product_id'] + order['supplier_id'],
+                'supplier_id' : order['supplier_id']
 
                 }
         orderList.append(tempOrder)
@@ -694,9 +694,9 @@ def getOrderData():
                 'order_id': order['order_id'],
                 'product_id': order['product_id'],
                 'product_name': order['product_name'],
-                'price' : order['price'],
+                'product_price' : order['product_price'],
                 'quantity' : order['quantity'],
-                'order_dt' : order['order_dt'],
+                'order_date' : order['order_date'],
                 'delivery_stauts' : order['delivery_stauts']
                 }
         orderList.append(tempOrder)
@@ -732,7 +732,7 @@ def getOrderData():
 #                   return result
 #
 #     return redirect(url_for('updateOrder'))
-@app.route('/updateOrderDetails', methods=['POST'])
+@app.route('/updateOrderDetails1', methods=['POST'])
 def updateOrderDetailsDummy():
     userInfo=request.get_json(force=True).get('userInfo')
     print(userInfo)
@@ -741,7 +741,7 @@ def updateOrderDetailsDummy():
     print(productRecord)
 
 
-@app.route('/updateOrderDetails1', methods=['POST'])
+@app.route('/updateOrderDetails', methods=['POST'])
 def updateOrderDetails():
     if request.method == 'POST':
         order_details = mongo.db.order_details
@@ -749,46 +749,50 @@ def updateOrderDetails():
         order_details_staging = mongo.db.order_details_staging
         sub_contracotor_details = mongo.db.sub_contracotor_details
         supplier = mongo.db.supplier
-        record = request.json['record']
+        record = request.get_json(force=True).get('productRecord')
         order_id = record['order_id']
         product_id = record['product_id']
         product_name = record['product_name']
         sup_product_id = record['sup_product_id']
         sub_product_id = record['sub_product_id']
-        Product_type = record['Product_type']
+        product_type = record['product_type']
         product_description = record['product_description']
-        price = record['price']
-        order_dt = record['order_dt']
+        product_price = record['product_price']
+        order_date = record['order_date']
         delivery_stauts = record['delivery_stauts']
         supplier_id = record['supplier_id']
-        sub_contractor_id = record['sub_contractor_id']
-        ordered_quantity = record['quantity']
-        print(ordered_quantity)
+        sub_contractor_id = record['s_user_name']
+        ordered_quantity = record['quantity_ordered']
+        print(delivery_stauts)
 
         thisOrder = order_details_staging.find_one({'order_id': order_id})
 
         thisSubContractor = supplier.find_one({'_id': sub_product_id})
 
         if thisOrder is None:
+            print("None")
             if delivery_stauts == 'CO':
+                print("here")
                 writeResult = order_details.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
                                                         'sub_product_id': sub_product_id,
                                                         'sup_product_id': sup_product_id,
                                                         'product_name': product_name,
-                                                        'price': str(price),
+                                                        'product_price': str(product_price),
                                                         'quantity': ordered_quantity,
+                                                        'product_type' : product_type,
                                                         'delivery_stauts': delivery_stauts,
-                                                        'order_dt': order_dt,
+                                                        'order_date': order_date,
                                                         'supplier_id': supplier_id,
                                                         'sub_contractor_id': sub_contractor_id})
                 writeResult = order_history.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
                                                         'sub_product_id': sub_product_id,
                                                         'sup_product_id': sup_product_id,
                                                         'product_name': product_name,
-                                                        'price': str(price),
+                                                        'product_price': str(product_price),
+                                                        'product_type' : product_type,
                                                         'quantity': ordered_quantity,
                                                         'delivery_stauts': delivery_stauts,
-                                                        'order_dt': order_dt,
+                                                        'order_date': order_date,
                                                         'supplier_id': supplier_id,
                                                         'sub_contractor_id': sub_contractor_id})
                 order_details_staging.delete_one({'_id': order_id})
@@ -811,8 +815,8 @@ def updateOrderDetails():
                         sub_contracotor_details.insert_one(
                             {'_id': sub_id, 'sub_contractor_id': sub_contractor_id, 'supplier_id': supplier_id,
                              'product_id': product_id, 'product_name': product_name,
-                             'ordered_quantity': ordered_quantity, 'price': price, 'delivery_stauts': delivery_stauts,
-                             'order_dt': order_dt, })
+                             'ordered_quantity': ordered_quantity, 'product_price': product_price, 'delivery_stauts': delivery_stauts,
+                             'order_date': order_date, })
                     if thisSupplier is not None:
                         print("Product found updating existing")
                         new_sup_qty = int(ordered_quantity) + int(thisSupplier['product_quantity'])
@@ -830,10 +834,10 @@ def updateOrderDetails():
                         print("New Record----")
                         supplier.insert_one(
                             {'_id': sup_product_id, 'product_id': product_id, 'product_name': product_name,
-                             'username': supplier_id, 'Product_type': Product_type,
-                             'product_description': product_description, 'price_per_qty': price,
+                             'username': supplier_id, 'product_type': product_type,
+                             'product_description': product_description, 'product_price': product_price,
                              'product_quantity': ordered_quantity, 'delivery_day': '1', 'no_orders': '0',
-                             'product_create_dt': order_dt})
+                             'product_create_dt': order_date})
                         new_sub_qty = int(thisSubContractor['product_quantity']) - int(ordered_quantity)
                         if new_sub_qty < 0:
                             new_sub_qty = 0;
@@ -866,8 +870,8 @@ def updateOrderDetails():
                         sub_contracotor_details.insert_one(
                             {'_id': sub_id, 'sub_contractor_id': sub_contractor_id, 'supplier_id': supplier_id,
                              'product_id': product_id, 'product_name': product_name,
-                             'ordered_quantity': ordered_quantity, 'price': price, 'delivery_stauts': delivery_stauts,
-                             'order_dt': order_dt, })
+                             'ordered_quantity': ordered_quantity, 'product_price': product_price, 'delivery_stauts': delivery_stauts,
+                             'order_date': order_date, })
                 print("This will execute for buyer declined orders")
                 new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
                 supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': new_order}})
@@ -875,20 +879,22 @@ def updateOrderDetails():
                                                         'sub_product_id': sub_product_id,
                                                         'sup_product_id': sup_product_id,
                                                         'product_name': product_name,
-                                                        'price': str(price),
+                                                        'product_price': str(product_price),
+                                                        'product_type' : product_type,
                                                         'quantity': ordered_quantity,
                                                         'delivery_stauts': delivery_stauts,
-                                                        'order_dt': order_dt,
+                                                        'order_date': order_date,
                                                         'supplier_id': supplier_id,
                                                         'sub_contractor_id': sub_contractor_id})
                 writeResult = order_details.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
                                                         'sub_product_id': sub_product_id,
                                                         'sup_product_id': sup_product_id,
                                                         'product_name': product_name,
-                                                        'price': str(price),
+                                                        'product_price': str(product_price),
+                                                        'product_type' : product_type,
                                                         'quantity': ordered_quantity,
                                                         'delivery_stauts': delivery_stauts,
-                                                        'order_dt': order_dt,
+                                                        'order_date': order_date,
                                                         'supplier_id': supplier_id,
                                                         'sub_contractor_id': sub_contractor_id})
                 order_details_staging.delete_one({'_id': order_id})
@@ -897,9 +903,9 @@ def updateOrderDetails():
         'order_id': order_id,
         'product_id': product_id,
         'product_name': product_name,
-        'price': price,
+        'product_price': product_price,
         'quantity': ordered_quantity,
-        'order_dt': order_dt,
+        'order_date': order_date,
         'delivery_stauts': delivery_stauts
     }
     return json.dumps(data)
@@ -929,9 +935,9 @@ def getCompleteOrder():
                 'order_id': order['order_id'],
                 'product_id': order['product_id'],
                 'product_name': order['product_name'],
-                'price' : order['price'],
+                'product_price' : order['product_price'],
                 'quantity' : order['quantity'],
-                 'order_dt' : order['order_dt'],
+                 'order_date' : order['order_date'],
                 'delivery_stauts' : order['delivery_stauts']
                 }
         orderList.append(tempOrder)
@@ -981,7 +987,7 @@ def getWishList():
                 'product_name': product['product_name'],
                 'product_type': product['product_type'],
                 'product_description': product['product_description'],
-                'product_price':product['price'],
+                'product_price':product['product_price'],
                 'product_quantity':product['quantity'],
                 'wish_status': product['wish_stauts'],
                 'wisher_id':product['wish_id']
