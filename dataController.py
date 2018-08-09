@@ -603,6 +603,7 @@ def showOrderDetails():
      ordersDetail=order_details.find({'supplier_id' : user})
      print(user)
      #return render_template('OrderList.html',orderStatusSnapShot=order_status_snapshot)
+     
      orderList=[]
      for order in orders:
         print(order['product_name'])
@@ -612,8 +613,14 @@ def showOrderDetails():
                 'product_name': order['product_name'],
                 'price' : order['price'],
                 'quantity' : order['quantity'],
-                 'order_dt' : order['order_dt'],
-                'delivery_stauts' : order['delivery_stauts']
+                'order_dt' : order['order_dt'],
+                'delivery_stauts' : order['delivery_stauts'],
+                'supplier_id' : user,
+                'sub_contractor_id' = order['sub_contractor_id'],
+                'sub_product_id' = order['product_id'] + order['sub_contractor_id'],
+                'sup_product_id' = order['product_id'] + order['supplier_id'],
+                'Product_type' = order['Product_type'],
+                'product_description' = order['product_description']
                 }
         orderList.append(tempOrder)
      for ordr in ordersDetail:
@@ -623,8 +630,14 @@ def showOrderDetails():
                 'product_name': ordr['product_name'],
                 'price' : ordr['price'],
                 'quantity' : ordr['quantity'],
-                 'order_dt' : ordr['order_dt'],
-                'delivery_stauts' : ordr['delivery_stauts']
+                'order_dt' : ordr['order_dt'],
+                'delivery_stauts' : ordr['delivery_stauts'],
+                'supplier_id' : user,
+                'sub_contractor_id' = ordr['sub_contractor_id']
+                'sub_product_id' = ordr['product_id'] + ordr['sub_contractor_id'],
+                'sup_product_id' = ordr['product_id'] + ordr['supplier_id'],
+                'Product_type' = ordr['Product_type'],
+                'product_description' = ordr['product_description']
                 }
         orderList.append(temp)
      return json.dumps(orderList)
