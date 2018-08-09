@@ -542,8 +542,9 @@ def placeOrder():
         thisSubContractor = sub_contracotor_details.find_one({'_id' :product_id})
         available_quantity = thisSubContractor['no_orders']
         #print(thisSubContractor)
-        try:
-            writeResult=order_details_staging.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,
+        if(new_order > available_quantity):
+            try:
+                writeResult=order_details_staging.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,
                                                           'sub_product_id' : sub_product_id,'sup_product_id' : '',
                                                           'product_name' : product_name,'product_type' : product_type,
                                                           'product_description' : product_description,
@@ -551,41 +552,46 @@ def placeOrder():
                                                           'quantity' : str(new_order),
                                                           'delivery_stauts' : 'OG',
                                                           'order_date': order_date,'supplier_id':supplier_id,'sub_contractor_id' : sub_contractor_id})
-            order=int(new_order)+int(thisSubContractor['no_orders'])
+                order=int(new_order)+int(thisSubContractor['no_orders'])
 
-            #return redirect(url_for('subcontract'))
+                #return redirect(url_for('subcontract'))
 
-            #result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
-            result=sub_contracotor_details.update_one({'_id': product_id}, {"$set": {'no_orders': str(order)}})
-            if result.modified_count > 0:
-                data = {
-                    'product_id': product_id,
-                    'product_name': product_name,
-                    'product_type': product_type,
-                    'product_description': product_description,
-                    'product_price': product_price,
-                    'no_orders': available_quantity - new_order,
-                    'new_order': new_order,
-		    'user': sub_contractor_id,
-                    'delivery_stauts' : 'OG',
-                    'flag' : 'success'
-                  }
-            else :
-                 data = {
-                     'product_id': product_id,
-                     'product_name': product_name,
-                     'product_type': product_type,
-                     'product_description': product_description,
-                     'product_price': product_price,
-                     'no_orders': available_quantity,
-                     'new_order': new_order,
-		     'user' : sub_contractor_id,
-                     'delivery_stauts' : 'OG',
-                     'flag' : 'error'
-                 }
+                #result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
+                result=sub_contracotor_details.update_one({'_id': product_id}, {"$set": {'no_orders': str(order)}})
+                if result.modified_count > 0:
+                    data = {
+                        'product_id': product_id,
+                        'product_name': product_name,
+                        'product_type': product_type,
+                        'product_description': product_description,
+                        'product_price': product_price,
+                        'no_orders': available_quantity - new_order,
+                        'new_order': new_order,
+		                'user': sub_contractor_id,
+                        'delivery_stauts' : 'OG',
+                        'flag' : 'success'
+                    }
+                else :
+                    data = {
+                        'product_id': product_id,
+                        'product_name': product_name,
+                        'product_type': product_type,
+                        'product_description': product_description,
+                        'product_price': product_price,
+                        'no_orders': available_quantity,
+                        'new_order': new_order,
+		                'user' : sub_contractor_id,
+                        'delivery_stauts' : 'OG',
+                        'flag' : 'error'
+                    }
+                return json.dumps(data)
+            except pymongo.errors.DuplicateKeyError as e:
+                print('IN exception')
+        else:
+            data= {
+                'error':'Cannot order more than available quantity'
+            }
             return json.dumps(data)
-        except pymongo.errors.DuplicateKeyError as e:
-            print('IN exception')
 
 
         
@@ -625,7 +631,7 @@ def showOrderDetails():
                 'sub_product_id' : order['product_id'] + order['sub_contractor_id'],
                 'sup_product_id' : order['product_id'] + order['supplier_id'],
                 'product_type' : order['product_type'],
-                'product_description' : order['product_description']
+                'product_description' : order['product_type']
                 }
         orderList.append(tempOrder)
      for ordr in ordersDetail:
@@ -642,7 +648,7 @@ def showOrderDetails():
                 'sub_product_id' : ordr['product_id'] + ordr['sub_contractor_id'],
                 'sup_product_id' : ordr['product_id'] + ordr['supplier_id'],
                 'product_type' : ordr['product_type'],
-                'product_description' : ordr['product_description']
+                'product_description' : ordr['product_type']
                 }
         orderList.append(temp)
      return json.dumps(orderList)
@@ -771,8 +777,10 @@ def updateOrderDetails():
         print(delivery_stauts)
 
         thisOrder = order_details_staging.find_one({'order_id': order_id})
+        print(order_id)
 
-        thisSubContractor = supplier.find_one({'_id': sub_product_id})
+        thisSubContractor = supplier.find_one({'_id': product_id})
+        print(sub_product_id)
 
         if thisOrder is not None:
             if delivery_stauts == 'CO':
