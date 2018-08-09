@@ -542,7 +542,7 @@ def placeOrder():
         thisSubContractor = sub_contracotor_details.find_one({'_id' :product_id})
         available_quantity = thisSubContractor['no_orders']
         #print(thisSubContractor)
-        if(new_order > available_quantity):
+        if(int(new_order) > int(available_quantity)):
             try:
                 writeResult=order_details_staging.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,
                                                           'sub_product_id' : sub_product_id,'sup_product_id' : '',
@@ -565,7 +565,8 @@ def placeOrder():
                         'product_type': product_type,
                         'product_description': product_description,
                         'product_price': product_price,
-                        'no_orders': available_quantity - new_order,
+                        #'no_orders': available_quantity - new_order,
+			'no_orders': order,
                         'new_order': new_order,
 		                'user': sub_contractor_id,
                         'delivery_stauts' : 'OG',
