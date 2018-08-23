@@ -542,38 +542,37 @@ def placeOrder():
         thisSubContractor = sub_contracotor_details.find_one({'_id' :product_id})
         available_quantity = thisSubContractor['no_orders']
         #print(thisSubContractor)
-        if(int(new_order) > int(available_quantity)):
-            try:
-                writeResult=order_details_staging.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,
-                                                          'sub_product_id' : sub_product_id,'sup_product_id' : '',
-                                                          'product_name' : product_name,'product_type' : product_type,
-                                                          'product_description' : product_description,
-                                                          'product_price' : str(product_price),
-                                                          'quantity' : str(new_order),
-                                                          'delivery_stauts' : 'OG',
-                                                          'order_date': order_date,'supplier_id':supplier_id,'sub_contractor_id' : sub_contractor_id})
-                order=int(new_order)+int(thisSubContractor['no_orders'])
-
-                #return redirect(url_for('subcontract'))
-
-                #result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
-                result=sub_contracotor_details.update_one({'_id': product_id}, {"$set": {'no_orders': str(order)}})
-                if result.modified_count > 0:
-                    data = {
+        try:
+            writeResult=order_details_staging.insert_one({'_id' : order_id ,'order_id':order_id,'product_id':product_id,
+                                                            'sub_product_id' : sub_product_id,'sup_product_id' : '',
+                                                            'product_name' : product_name,'product_type' : product_type,
+                                                            'product_description' : product_description,
+                                                            'product_price' : str(product_price),
+                                                            'quantity' : str(new_order),
+                                                            'delivery_stauts' : 'OG',
+                                                            'order_date': order_date,'supplier_id':supplier_id,'sub_contractor_id' : sub_contractor_id})
+            order=int(new_order)+int(thisSubContractor['no_orders'])
+    
+                    #return redirect(url_for('subcontract'))
+    
+                    #result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
+            result=sub_contracotor_details.update_one({'_id': product_id}, {"$set": {'no_orders': str(order)}})
+            if result.modified_count > 0:
+                data = {
                         'product_id': product_id,
                         'product_name': product_name,
                         'product_type': product_type,
                         'product_description': product_description,
                         'product_price': product_price,
-                        #'no_orders': available_quantity - new_order,
-			'no_orders': order,
+                            #'no_orders': available_quantity - new_order,
+    			        'no_orders': order,
                         'new_order': new_order,
-		                'user': sub_contractor_id,
+    		            'user': sub_contractor_id,
                         'delivery_stauts' : 'OG',
                         'flag' : 'success'
-                    }
-                else :
-                    data = {
+                        }
+            else :
+                data = {
                         'product_id': product_id,
                         'product_name': product_name,
                         'product_type': product_type,
@@ -581,19 +580,13 @@ def placeOrder():
                         'product_price': product_price,
                         'no_orders': available_quantity,
                         'new_order': new_order,
-		                'user' : sub_contractor_id,
+    		            'user' : sub_contractor_id,
                         'delivery_stauts' : 'OG',
                         'flag' : 'error'
-                    }
-                return json.dumps(data)
-            except pymongo.errors.DuplicateKeyError as e:
-                print('IN exception')
-        else:
-            data= {
-                'error':'Cannot order more than available quantity'
-            }
+                        }
             return json.dumps(data)
-
+        except pymongo.errors.DuplicateKeyError as e:
+			print('IN exception')
 
         
         
