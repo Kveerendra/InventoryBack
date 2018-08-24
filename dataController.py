@@ -586,7 +586,7 @@ def placeOrder():
                         }
             return json.dumps(data)
         except pymongo.errors.DuplicateKeyError as e:
-			print('IN exception')
+            print('IN exception')
 
         
         
@@ -861,16 +861,18 @@ def updateOrderDetails():
             else:
                 print(
                     "New Record----2 for this block is for buyer/supplier place an order to supplier and supplier Denied ")
+                print(order_id[0])
                 if order_id[0] == 'S':
                     sub_id = supplier_id + sub_contractor_id + product_id
                     thisSubcontracotor = sub_contracotor_details.find_one({'_id': sub_id})
+                    
                     if thisSubcontracotor is not None:
                         print("Exist")
                         sub_contracotor_details.update_one({'_id': sub_id}, {"$set": {'ordered_quantity': str(
                             int(thisSubcontracotor['ordered_quantity']) + int(ordered_quantity))}})
                         #new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
                         #supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(new_order)}})
-			supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(thisSubContractor['no_orders'])}})
+                        supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(thisSubContractor['no_orders'])}})
                     else:
                         print("new")
                         sub_contracotor_details.insert_one(
@@ -881,7 +883,9 @@ def updateOrderDetails():
                 print("This will execute for buyer declined orders")
                 #new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
                 #supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': new_order}})
-		supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(thisSubContractor['no_orders'])}})
+                new_order = str(thisSubContractor['no_orders'])
+                print(new_order)
+                supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(thisSubContractor['no_orders'])}})
                 writeResult = order_history.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
                                                         'sub_product_id': sub_product_id,
                                                         'sup_product_id': sup_product_id,
@@ -985,7 +989,8 @@ def insertMasterData():
 def getWishList():
     userInfo=request.get_json(force=True).get('userInfo')
     wish_list_details = mongo.db.wish_list_details
-    wish_list_detail=wish_list_details.find({"supplier_id" : userInfo['username']})
+    print(userInfo['username'])
+    wish_list_detail=wish_list_details.find({"sub_contractor_id" : userInfo['username']})
     retObj =[]
     for product in wish_list_detail:
         #qty=int(productStatus['product_quantity']) - int(productStatus['no_orders'])
@@ -999,6 +1004,7 @@ def getWishList():
                 'wish_status': product['wish_stauts'],
                 'wisher_id':product['wish_id']
                 }
+        print(tempProduct)
         retObj.append(tempProduct)
     print(retObj)
     return json.dumps(retObj)
