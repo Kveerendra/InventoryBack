@@ -868,7 +868,7 @@ def updateOrderDetails():
                         print("Exist")
                         sub_contracotor_details.update_one({'_id': sub_id}, {"$set": {'ordered_quantity': str(
                             int(thisSubcontracotor['ordered_quantity']) + int(ordered_quantity))}})
-                        new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                        #new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
                         #supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(new_order)}})
 			supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(thisSubContractor['no_orders'])}})
                     else:
@@ -879,7 +879,7 @@ def updateOrderDetails():
                              'ordered_quantity': ordered_quantity, 'product_price': product_price, 'delivery_stauts': delivery_stauts,
                              'order_date': order_date, })
                 print("This will execute for buyer declined orders")
-                new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                #new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
                 #supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': new_order}})
 		supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(thisSubContractor['no_orders'])}})
                 writeResult = order_history.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
