@@ -176,7 +176,8 @@ def updateProduct():
         delivery_day=productinfo['delivery_day']
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
-        supplier.update_one({'product_id':product_id},{'$set':{'product_name' : product_name , 'username' : user,'product_price' : product_price,'product_quantity': quantity,'delivery_day': delivery_day,'product_create_dt': pcreate_dt}})
+        print(delivery_day)
+        supplier.update_one({'product_id':product_id},{'$set':{'product_name' : product_name , 'username' : user['username'],'product_price' : product_price,'product_quantity': quantity,'delivery_day': delivery_day,'product_create_dt': pcreate_dt}})
         formData = {
 		        'product_id': product_id,
                 'product_name': product_name,
