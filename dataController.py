@@ -103,7 +103,8 @@ def addproduct():
         user=request.get_json(force=True).get('user')
         print(data)
         productname = data['product_name']
-        pname = productname+'_'+str(randint(10000,99999))
+        product_id = data['product_id']
+        pname = product_id+user['username']
         product_type = data['product_type']  
         description=data['product_description']
         product_price=data['product_price']
@@ -111,9 +112,15 @@ def addproduct():
         delivery_day=data['product_delivery']
         now = datetime.datetime.now()
         pcreate_dt= now.strftime("%Y-%m-%d %H:%M")
-        supplier.insert_one({'_id':pname,'product_id':pname,'product_name' : productname , 'username' : user['username'],'product_type' : product_type, 'product_description' : description, 'product_price' : product_price,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
-        
-        return json.dumps(data)	
+        thisSupplier=supplier.find_one({'_id':pname})
+        action=''
+        if thisSupplier is None:
+            action='Inserted'
+            supplier.insert_one({'_id':pname,'product_id':product_id,'product_name' : productname , 'username' : user['username'],'product_type' : product_type, 'product_description' : description, 'product_price' : product_price,'product_quantity': quantity,'delivery_day': delivery_day, 'no_orders': 0 ,'product_create_dt': pcreate_dt})
+        else:
+            action='Updated'
+            supplier.update_one({'product_id':product_id},{'$set':{'product_price' : product_price,'product_quantity': str(int(quantity)+int(thisSupplier['product_quantity'])),'delivery_day': delivery_day,'product_create_dt': pcreate_dt}})
+        return json.dumps(action)	
         
     #return redirect(url_for('createproduct'))
     
@@ -530,7 +537,7 @@ def placeOrder():
         product_price=recievedData['product_price']
         no_orders=recievedData['product_quantity']
         new_order=recievedData['quantity_ordered']
-        sub_contractor_id=recievedData['username']
+        #sub_contractor_id=recievedData['username']
         supplier_id=recievedData['username']
         #supplier_id = ' '
         sub_contractor_id=recievedData['s_user_name'] #Added-Snigdha
@@ -540,7 +547,7 @@ def placeOrder():
         now = datetime.datetime.now()
         order_date= now.strftime("%Y-%m-%d %H:%M")
         #thisSubContractor = sub_contracotor_details.find_one({'_id' : _id})
-        thisSubContractor = sub_contracotor_details.find_one({'_id' :product_id})
+        thisSubContractor = sub_contracotor_details.find_one({'_id' :sub_product_id})
         available_quantity = thisSubContractor['no_orders']
         #print(thisSubContractor)
         try:
@@ -556,8 +563,8 @@ def placeOrder():
     
                     #return redirect(url_for('subcontract'))
     
-                    #result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
-            result=sub_contracotor_details.update_one({'_id': product_id}, {"$set": {'no_orders': str(order)}})
+            #result=sub_contracotor_details.update_one({'_id': _id}, {"$set": {'no_orders': str(order)}})
+            result=sub_contracotor_details.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(order)}})
             if result.modified_count > 0:
                 data = {
                         'product_id': product_id,
@@ -774,8 +781,10 @@ def updateOrderDetails():
         thisOrder = order_details_staging.find_one({'order_id': order_id})
         print(order_id)
 
-        thisSubContractor = supplier.find_one({'_id': product_id})
+        thisSubContractor = supplier.find_one({'_id': sub_product_id})
         print(sub_product_id)
+        sup_product_id=product_id+supplier_id
+        
 
         if thisOrder is not None:
             if delivery_stauts == 'CO':
@@ -826,7 +835,7 @@ def updateOrderDetails():
                     if thisSupplier is not None:
                         print("Product found updating existing")
                         new_sup_qty = int(ordered_quantity) + int(thisSupplier['product_quantity'])
-                        result = supplier.update_one({'_id': sup_product_id},
+                        result = supplier.update_one({'_id': thisSupplier['_id']},
                                                      {"$set": {'product_quantity': str(new_sup_qty)}})
 
                         new_sub_qty = int(thisSubContractor['product_quantity']) - int(ordered_quantity)
@@ -847,17 +856,21 @@ def updateOrderDetails():
                         new_sub_qty = int(thisSubContractor['product_quantity']) - int(ordered_quantity)
                         if new_sub_qty < 0:
                             new_sub_qty = 0;
-                        result = supplier.update_one({'_id': sub_product_id},
+                        result = supplier.update_one({'_id': thisSubContractor['_id']},
                                                      {"$set": {'product_quantity': str(new_sub_qty)}})
+                        new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                        supplier.update_one({'_id': thisSubContractor['_id']}, {"$set": {'no_orders': str(new_order)}})
                 else:
                     print("New Record----1 this block is for buyer place an order to supplier and supplier approves ")
                     new_sub_qty = int(thisSubContractor['product_quantity']) - int(ordered_quantity)
+                    print(new_sub_qty)
+                    print(product_id)
                     if new_sub_qty < 0:
                         new_sub_qty = 0;
-                    result = supplier.update_one({'_id': sub_product_id},
+                    result = supplier.update_one({'_id': thisSubContractor['_id']},
                                                  {"$set": {'product_quantity': str(new_sub_qty)}})
                     new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
-                    supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(new_order)}})
+                    supplier.update_one({'_id': thisSubContractor['_id']}, {"$set": {'no_orders': str(new_order)}})
 
             else:
                 print(
@@ -873,7 +886,8 @@ def updateOrderDetails():
                             int(thisSubcontracotor['ordered_quantity']) + int(ordered_quantity))}})
                         #new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
                         #supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(new_order)}})
-                        supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(thisSubContractor['no_orders'])}})
+                        new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                        supplier.update_one({'_id': thisSubContractor['_id']}, {"$set": {'no_orders': str(new_order)}})
                     else:
                         print("new")
                         sub_contracotor_details.insert_one(
@@ -881,12 +895,14 @@ def updateOrderDetails():
                              'product_id': product_id, 'product_name': product_name,
                              'ordered_quantity': ordered_quantity, 'product_price': product_price, 'delivery_stauts': delivery_stauts,
                              'order_date': order_date, })
-                print("This will execute for buyer declined orders")
+                        new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                        supplier.update_one({'_id': thisSubContractor['_id']}, {"$set": {'no_orders': str(new_order)}})
+                else:
+                    print("This will execute for buyer declined orders")
                 #new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
                 #supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': new_order}})
-                new_order = str(thisSubContractor['no_orders'])
-                print(new_order)
-                supplier.update_one({'_id': sub_product_id}, {"$set": {'no_orders': str(thisSubContractor['no_orders'])}})
+                    new_order = int(thisSubContractor['no_orders']) - int(ordered_quantity)
+                    supplier.update_one({'_id': thisSubContractor['_id']}, {"$set": {'no_orders': str(new_order)}})
                 writeResult = order_history.insert_one({'_id': order_id, 'order_id': order_id, 'product_id': product_id,
                                                         'sub_product_id': sub_product_id,
                                                         'sup_product_id': sup_product_id,
